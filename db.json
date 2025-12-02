@@ -1,0 +1,118 @@
+    {
+      "users": [
+        {
+          "id": "1764334004227",
+          "fname": "afrah",
+          "lname": "zayan",
+          "email": "afrah@gmail.com",
+          "password": "123456",
+          "createdAt": "2025-11-28T12:46:44.227Z"
+        },
+        {
+          "id": "1764334182338",
+          "fname": "zayan",
+          "lname": "zayaaan",
+          "email": "zayan@gmail.com",
+          "password": "1234567",
+          "createdAt": "2025-11-28T12:49:42.338Z"
+        }
+      ],
+
+
+
+      "products": [
+        {
+          "Product__id":"1",  
+          "name":"ZYRAE AURA Mist",
+          "price":"5000",
+          "image":"src/assets/pro5.jpg",
+          "collection":"sdfg",
+          "id":"1234"
+
+        },
+        {
+          "Product__id":"2",
+          "name":"fghjk",
+          "price":"4000",
+          "image":"src/assets/pro6.jpg",
+          "collection":"wrte",
+          "id":"4321"
+
+        },
+        {
+          "Product__id":"3",
+          "name":"klkj",
+          "price":"5000",
+          "image":"src/assets/pro10.jpg",
+          "collection":"",
+          "id":"2341"
+        },
+        {
+          "Product__id":"4",
+          "name":"",
+          "price":"",
+          "image":"/src/assets/pro8.jpg",
+          "collection":"",
+          "id":"1432"
+        },
+        {
+          "Product__id":"5",
+          "name":"",
+          "price":"",
+          "image":"",
+          "collection":"",
+          "id":"5678"
+        },
+        {
+          "Product__id":"6",
+          "name":"",
+          "price":"",
+          "image":"",
+          "collection":"",
+          "id":"5678"
+        },
+        {
+          "Product__id":"6",
+          "name":"",
+          "price":"",
+          "image":"",
+          "collection":"",
+          "id":"5678"
+        },
+        {
+          "Product__id":"6",
+          "name":"",
+          "price":"",
+          "image":"",
+          "collection":"",
+          "id":"5678"
+        },
+        {
+          "Product__id":"6",
+          "name":"",
+          "price":"",
+          "image":"",
+          "collection":"",
+          "id":"5678"
+        },
+        {
+          "Product__id":"6",
+          "name":"",
+          "price":"",
+          "image":"",
+          "collection":"",
+          "id":"5678"
+        },
+        {
+          "Product__id":"6",
+          "name":"",
+          "price":"",
+          "image":"",
+          "collection":"",
+          "id":"5678"
+        }
+      ],
+      "cart": [
+        
+      ]
+    }
