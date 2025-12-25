@@ -9,11 +9,11 @@ const initialValues = {
   lname: '',
   email: '',
   password: '',
-  cpassword: '',
+  cpassword: '',  
 };
 
 function Registration() {
-  const { register, loading, error, user, clearError } = useAuth();
+  const { register, loading, error,clearError } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,7 +38,6 @@ function Registration() {
     }
   });
 
-  // Debug logs
   console.log('Form errors:', errors);
   console.log('Touched fields:', touched);
   console.log('Form values:', values);
@@ -46,8 +45,8 @@ function Registration() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#FFF2E1' }}>
       <div className="rounded-xl shadow-lg p-8 max-w-md w-full border" style={{ backgroundColor: '#FFF2E1', borderColor: '#D1BB9E' }}>
-        {/* Brand Header */}
-        <div className="text-center mb-8">
+      
+           <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2" style={{ color: '#5A4638' }}>Zyraé</h1>
           <h2 className="text-xl font-semibold" style={{ color: '#A79277' }}>Create Your Account</h2>
           <p className="text-sm mt-2" style={{ color: '#8B7355' }}>
@@ -55,7 +54,7 @@ function Registration() {
           </p>
         </div>
         
-        {/* Error Message */}
+  
         {error && (
           <div className="rounded-lg px-4 py-3 mb-6 text-sm" style={{ backgroundColor: '#FFEBEE', border: '1px solid #EF5350', color: '#C62828' }}>
             <div className="flex items-center">
@@ -67,9 +66,9 @@ function Registration() {
           </div>
         )}
 
-        {/* Registration Form */}
+      
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Name Fields */}
+    
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor='fname' className="block text-sm font-medium mb-2" style={{ color: '#5A4638' }}>
@@ -90,7 +89,7 @@ function Registration() {
                   borderColor: errors.fname && touched.fname ? '#EF5350' : '#D1BB9E',
                   color: '#5A4638'
                 }}
-                placeholder="John"
+                placeholder="Afrah"
               />
               {errors.fname && touched.fname && (
                 <div className="flex items-center mt-1">
@@ -121,7 +120,7 @@ function Registration() {
                   borderColor: errors.lname && touched.lname ? '#EF5350' : '#D1BB9E',
                   color: '#5A4638'
                 }}
-                placeholder="Doe"
+                placeholder="Zayan"
               />
               {errors.lname && touched.lname && (
                 <div className="flex items-center mt-1">
@@ -134,7 +133,8 @@ function Registration() {
             </div>
           </div>
 
-          {/* Email Field */}
+          
+
           <div>
             <label htmlFor='email' className="block text-sm font-medium mb-2" style={{ color: '#5A4638' }}>
               Email Address *
@@ -154,7 +154,7 @@ function Registration() {
                 borderColor: errors.email && touched.email ? '#EF5350' : '#D1BB9E',
                 color: '#5A4638'
               }}
-              placeholder="john.doe@example.com"
+              placeholder="afrah.zayan@gmail.com"
             />
             {errors.email && touched.email && (
               <div className="flex items-center mt-1">
@@ -166,7 +166,7 @@ function Registration() {
             )}
           </div>
 
-          {/* Password Field */}
+          
           <div>
             <label htmlFor='password' className="block text-sm font-medium mb-2" style={{ color: '#5A4638' }}>
               Password *
@@ -201,7 +201,10 @@ function Registration() {
             </p>
           </div>
 
-          {/* Confirm Password Field */}
+
+
+
+          
           <div>
             <label htmlFor='cpassword' className="block text-sm font-medium mb-2" style={{ color: '#5A4638' }}>
               Confirm Password *
@@ -233,7 +236,7 @@ function Registration() {
             )}
           </div>
 
-          {/* Terms & Conditions */}
+          
           <div className="flex items-start">
             <input
               type="checkbox"
@@ -254,7 +257,7 @@ function Registration() {
             </label>
           </div>
 
-          {/* Submit Button */}
+          
           <button
             type='submit'
             disabled={loading}
@@ -281,7 +284,8 @@ function Registration() {
             )}
           </button>
 
-          {/* Divider */}
+          
+
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full" style={{ borderTop: '1px solid #D1BB9E' }}></div>
@@ -293,7 +297,7 @@ function Registration() {
             </div>
           </div>
 
-          {/* Login Link */}
+          
           <div className="text-center">
             <p className="text-sm" style={{ color: '#A79277' }}>
               Already have an account?{' '}
@@ -309,7 +313,7 @@ function Registration() {
         </form>
       </div>
 
-      {/* Global Styles for consistent text colors */}
+      
       <style jsx global>{`
         input::placeholder {
           color: #A79277;

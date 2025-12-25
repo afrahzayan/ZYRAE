@@ -1,118 +1,276 @@
+{
+  "users": [
     {
-      "users": [
-        {
-          "id": "1764334004227",
-          "fname": "afrah",
-          "lname": "zayan",
-          "email": "afrah@gmail.com",
-          "password": "123456",
-          "createdAt": "2025-11-28T12:46:44.227Z"
-        },
-        {
-          "id": "1764334182338",
-          "fname": "zayan",
-          "lname": "zayaaan",
-          "email": "zayan@gmail.com",
-          "password": "1234567",
-          "createdAt": "2025-11-28T12:49:42.338Z"
-        }
-      ],
-
-
-
-      "products": [
-        {
-          "Product__id":"1",  
-          "name":"ZYRAE AURA Mist",
-          "price":"5000",
-          "image":"src/assets/pro5.jpg",
-          "collection":"sdfg",
-          "id":"1234"
-
-        },
-        {
-          "Product__id":"2",
-          "name":"fghjk",
-          "price":"4000",
-          "image":"src/assets/pro6.jpg",
-          "collection":"wrte",
-          "id":"4321"
-
-        },
-        {
-          "Product__id":"3",
-          "name":"klkj",
-          "price":"5000",
-          "image":"src/assets/pro10.jpg",
-          "collection":"",
-          "id":"2341"
-        },
-        {
-          "Product__id":"4",
-          "name":"",
-          "price":"",
-          "image":"/src/assets/pro8.jpg",
-          "collection":"",
-          "id":"1432"
-        },
-        {
-          "Product__id":"5",
-          "name":"",
-          "price":"",
-          "image":"",
-          "collection":"",
-          "id":"5678"
-        },
-        {
-          "Product__id":"6",
-          "name":"",
-          "price":"",
-          "image":"",
-          "collection":"",
-          "id":"5678"
-        },
-        {
-          "Product__id":"6",
-          "name":"",
-          "price":"",
-          "image":"",
-          "collection":"",
-          "id":"5678"
-        },
-        {
-          "Product__id":"6",
-          "name":"",
-          "price":"",
-          "image":"",
-          "collection":"",
-          "id":"5678"
-        },
-        {
-          "Product__id":"6",
-          "name":"",
-          "price":"",
-          "image":"",
-          "collection":"",
-          "id":"5678"
-        },
-        {
-          "Product__id":"6",
-          "name":"",
-          "price":"",
-          "image":"",
-          "collection":"",
-          "id":"5678"
-        },
-        {
-          "Product__id":"6",
-          "name":"",
-          "price":"",
-          "image":"",
-          "collection":"",
-          "id":"5678"
-        }
-      ],
-      "cart": [
-        
-      ]
+      "id": "1765804154946",
+      "fname": "admin",
+      "lname": "admin",
+      "email": "admin@gmail.com",
+      "password": "1234567",
+      "role": "admin"
+    },
+    {
+      "id": "1764334004227",
+      "fname": "afrah",
+      "lname": "zayan",
+      "email": "afrah@gmail.com",
+      "password": "123456",
+      "role": "user",
+      "createdAt": "2025-11-28T12:46:44.227Z"
+    },
+    {
+      "id": "1764334182338",
+      "fname": "zayan",
+      "lname": "zayaaan",
+      "email": "zayan@gmail.com",
+      "password": "1234567",
+      "role": "user",
+      "createdAt": "2025-11-28T12:49:42.338Z",
+      "isBlocked": true
+    },
+    {
+      "id": "1764822164664",
+      "fname": "rifana",
+      "lname": "sherin",
+      "email": "rifanasherin80@gmail.com",
+      "password": "Rifanasherin123",
+      "role": "user",
+      "createdAt": "2025-12-04T04:22:44.664Z"
+    },
+    {
+      "id": "1764841756823",
+      "fname": "ss1234",
+      "lname": "d2345",
+      "email": "ggg@gmail.com",
+      "password": "123456789",
+      "role": "user",
+      "createdAt": "2025-12-04T09:49:16.823Z"
+    },
+    {
+      "id": "1765804154946",
+      "fname": "adil",
+      "lname": "aadhyy",
+      "email": "adil@gmail.com",
+      "password": "123123",
+      "role": "user",
+      "createdAt": "2025-12-15T13:09:14.946Z"
     }
+  ],
+  "products": [
+    {
+      "Product__id": "1",
+      "name": "Fleur D’Or",
+      "price": "3999",
+      "image": "src/assets/pro5.jpg",
+      "collection": "Floral",
+      "id": "1234"
+    },
+    {
+      "Product__id": "2",
+      "name": "Royal Amber",
+      "price": "4999",
+      "image": "src/assets/or9.jpg",
+      "collection": "Oriental",
+      "id": "4321"
+    },
+    {
+      "Product__id": "3",
+      "name": "Sandalwood Ember",
+      "price": "3499",
+      "image": "src/assets/pro10.jpg",
+      "collection": "Woody",
+      "id": "2341"
+    },
+    {
+      "Product__id": "4",
+      "name": "Golden Zest",
+      "price": "3000",
+      "image": "src/assets/or8.jpg",
+      "collection": "Citrus",
+      "id": "1432"
+    },
+    {
+      "Product__id": "6",
+      "name": "Citrus Bloom",
+      "price": "3699",
+      "image": "src/assets/prod14.jpg",
+      "collection": "Citrus",
+      "id": "6666"
+    },
+    {
+      "Product__id": "7",
+      "name": "Orchid Luxe",
+      "price": "4999",
+      "image": "src/assets/pro6.jpg",
+      "collection": "Floral",
+      "id": "7777"
+    },
+    {
+      "Product__id": "8",
+      "name": "Eternal Oud",
+      "price": "3799",
+      "image": "src/assets/dark.jpg",
+      "collection": "Oriental",
+      "id": "8888"
+    },
+    {
+      "Product__id": "9",
+      "name": "Summer Zest",
+      "price": "3999",
+      "image": "src/assets/or4.jpg",
+      "collection": "Citrus",
+      "id": "9999"
+    },
+    {
+      "Product__id": "10",
+      "name": "Majestic Orient",
+      "price": "4567",
+      "image": "src/assets/or1.jpg",
+      "collection": "Oriental",
+      "id": "1010"
+    },
+    {
+      "Product__id": "12",
+      "name": "Zesty Aura",
+      "price": "5000",
+      "image": "src/assets/or2.jpg",
+      "collection": "Citrus",
+      "id": "1212"
+    },
+    {
+      "Product__id": "13",
+      "name": "Rosé Imperial",
+      "price": "3699",
+      "image": "src/assets/pro8.jpg",
+      "collection": "Floral",
+      "id": "1313"
+    },
+    {
+      "Product__id": "15",
+      "name": "ELNAR",
+      "price": "4999",
+      "image": "src/assets/or3.jpg",
+      "collection": "Oriental",
+      "id": "1515"
+    },
+    {
+      "Product__id": "16",
+      "name": "Fleur Essence",
+      "price": "3599",
+      "image": "src/assets/pro15.jpg",
+      "collection": "Floral",
+      "id": "1616"
+    },
+    {
+      "Product__id": "17",
+      "name": "Oud Royale",
+      "price": "4799",
+      "image": "src/assets/or5.jpg",
+      "collection": "Woody",
+      "id": "1717"
+    },
+    {
+      "Product__id": "18",
+      "name": "Crimson Bloom",
+      "price": "3899",
+      "image": "src/assets/or7.jpg",
+      "collection": "Oriental",
+      "id": "1818"
+    },
+    {
+      "Product__id": "19",
+      "name": "Lume",
+      "price": "5000",
+      "image": "src/assets/or6.jpg",
+      "collection": "Citrus",
+      "id": "1919"
+    },
+    {
+      "Product__id": "20",
+      "name": "Blush Royal",
+      "price": "4000",
+      "image": "src/assets/pro7.jpg",
+      "collection": "Floral",
+      "id": " 2020"
+    },
+    {
+      "Product__id": "5",
+      "name": "Amberwood Trail",
+      "price": "3000",
+      "image": "src/assets/pro2.jpg",
+      "collection": "Woody",
+      "id": "5678"
+    },
+    {
+      "Product__id": "11",
+      "name": "Dark Ember",
+      "price": "3299",
+      "image": "src/assets/pro3.jpg",
+      "collection": "Woody",
+      "id": "111111"
+    },
+    {
+      "Product__id": "14",
+      "name": "Santal Nocturne",
+      "price": "4699",
+      "image": "src/assets/pro4.jpg",
+      "collection": "Woody",
+      "id": "1414"
+    }
+  ],
+  "cart": [],
+  "wishlist": [],
+  "orders": [
+    {
+      "id": "1766034647450",
+      "orderNumber": "ORD647451",
+      "userId": "1764334004227",
+      "userName": "afrah zayan",
+      "userEmail": "afrah@gmail.com",
+      "userPhone": "12345567890",
+      "items": [
+        {
+          "productId": "1766034613413",
+          "name": "Sandalwood Ember",
+          "price": 3499,
+          "image": "src/assets/pro10.jpg",
+          "quantity": 1,
+          "size": "50ml"
+        }
+      ],
+      "shippingAddress": "ghjkl;lkjhgtyu",
+      "shippingCity": "dfghjmbn",
+      "shippingState": "uythrgedgh",
+      "shippingZip": "1232343454",
+      "totalAmount": 3499,
+      "paymentMethod": "cod",
+      "status": "shipped",
+      "orderDate": "2025-12-18T05:10:47.451Z"
+    },
+    {
+      "id": "1766035316641",
+      "orderNumber": "ORD316641",
+      "userId": "1764334004227",
+      "userName": "afrah zayan",
+      "userEmail": "afrah@gmail.com",
+      "userPhone": "12345567890",
+      "items": [
+        {
+          "productId": "1766035283760",
+          "name": "Sandalwood Ember",
+          "price": 3499,
+          "image": "src/assets/pro10.jpg",
+          "quantity": 1,
+          "size": "50ml"
+        }
+      ],
+      "shippingAddress": "tydhfgblokhgk",
+      "shippingCity": "kjb,m ",
+      "shippingState": "mnb ,m",
+      "shippingZip": "686899",
+      "totalAmount": 3499,
+      "paymentMethod": "cod",
+      "status": "cancelled",
+      "orderDate": "2025-12-18T05:21:56.641Z"
+    }
+  ]
+}

@@ -4,10 +4,12 @@ export const signup = Yup.object({
   fname: Yup.string()
     .min(2, 'First name must be at least 2 characters')
     .max(50, 'First name must be less than 50 characters')
+    .matches(/^[A-Za-zs]+$/, 'First name must contain only letters')
     .required('First name is required'),
   lname: Yup.string()
     .min(2, 'Last name must be at least 2 characters')
     .max(50, 'Last name must be less than 50 characters')
+    .matches(/^[A-Za-zs]+$/, 'Last name must contain only letters')
     .required('Last name is required'),
   email: Yup.string()
     .email('Invalid email address')
