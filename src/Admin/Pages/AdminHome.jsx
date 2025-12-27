@@ -23,7 +23,6 @@ const AdminHome = () => {
     try {
       setLoading(true);
       
-      // Fetch all data in parallel
       const [usersRes, productsRes, ordersRes] = await Promise.all([
         api.get('/users'),
         api.get('/products'),
@@ -34,22 +33,22 @@ const AdminHome = () => {
       const products = productsRes.data;
       const orders = ordersRes.data;
 
-      // Calculate total revenue
+      
       const totalRevenue = orders.reduce((sum, order) => 
         sum + (order.totalAmount || 0), 0
       );
 
-      // Get recent orders (last 5)
+      
       const recentOrders = [...orders]
         .sort((a, b) => new Date(b.orderDate || b.createdAt) - new Date(a.orderDate || a.createdAt))
         .slice(0, 5);
 
-      // Get recent users (last 5)
+      
       const recentUsers = [...users]
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 5);
 
-      // Prepare revenue chart data (last 6 months)
+      
       const monthlyRevenue = calculateMonthlyRevenue(orders);
 
       setStats({
@@ -152,15 +151,15 @@ const AdminHome = () => {
   return (
     <Dashboard>
       <div className="space-y-6">
-        {/* Header */}
+        
         <div>
           <h1 className="text-3xl font-bold" style={{ color: '#5A4638' }}>Admin Dashboard</h1>
           <p className="text-sm mt-1" style={{ color: '#8B7355' }}>
-            Welcome back! Here's what's happening with your store today.
+            Welcome back! 
           </p>
         </div>
 
-        {/* Stats Grid */}
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             title="Total Users"
@@ -212,7 +211,7 @@ const AdminHome = () => {
           />
         </div>
 
-        {/* Recent Orders - Full Width */}
+      
         <div 
           className="p-6 rounded-xl border"
           style={{ 
@@ -272,7 +271,9 @@ const AdminHome = () => {
           </div>
         </div>
 
-        {/* Recent Users - Full Width */}
+        
+
+        
         <div 
           className="p-6 rounded-xl border"
           style={{ 

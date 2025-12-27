@@ -19,7 +19,7 @@ const AddProduct = () => {
     category: 'perfume'
   });
 
-  // Handle form input changes
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -28,11 +28,11 @@ const AddProduct = () => {
     }));
   };
 
-  // Handle form submission
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validation
+    
     if (!formData.name || !formData.price || !formData.collection) {
       alert('Please fill in all required fields (Name, Price, Collection)');
       return;
@@ -41,7 +41,7 @@ const AddProduct = () => {
     try {
       setLoading(true);
       
-      // Prepare product data
+      
       const productData = {
         ...formData,
         price: parseFloat(formData.price),
@@ -63,7 +63,7 @@ const AddProduct = () => {
     }
   };
 
-  // Collections list for dropdown
+
   const collections = [
     'Floral',
     'Woody ',
@@ -74,7 +74,7 @@ const AddProduct = () => {
   return (
     <Dashboard>
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header with back button */}
+        
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button
@@ -99,13 +99,13 @@ const AddProduct = () => {
           </div>
         </div>
 
-        {/* Form Section */}
+      
         <div className="bg-white rounded-xl border p-6" style={{ 
           backgroundColor: '#FFF2E1',
           borderColor: '#D1BB9E'
         }}>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Basic Information */}
+            
             <div className="space-y-4">
               <h3 className="text-lg font-semibold pb-2 border-b" style={{ 
                 color: '#5A4638',
@@ -115,7 +115,7 @@ const AddProduct = () => {
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Product Name */}
+                
                 <div>
                   <label className="block text-sm font-medium mb-1" style={{ color: '#5A4638' }}>
                     Product Name *
@@ -136,7 +136,7 @@ const AddProduct = () => {
                   />
                 </div>
 
-                {/* Collection */}
+                
                 <div>
                   <label className="block text-sm font-medium mb-1" style={{ color: '#5A4638' }}>
                     Collection *
@@ -162,7 +162,7 @@ const AddProduct = () => {
                   </select>
                 </div>
 
-                {/* Price */}
+                
                 <div>
                   <label className="block text-sm font-medium mb-1" style={{ color: '#5A4638' }}>
                     Price (₹) *
@@ -185,7 +185,7 @@ const AddProduct = () => {
                   />
                 </div>
 
-                {/* Size */}
+                
                 <div>
                   <label className="block text-sm font-medium mb-1" style={{ color: '#5A4638' }}>
                     Size (ml)
@@ -206,7 +206,7 @@ const AddProduct = () => {
                 </div>
               </div>
 
-              {/* Description */}
+            
               <div>
                 <label className="block text-sm font-medium mb-1" style={{ color: '#5A4638' }}>
                   Description
@@ -226,7 +226,7 @@ const AddProduct = () => {
                 />
               </div>
 
-              {/* Fragrance Notes */}
+              
               <div>
                 <label className="block text-sm font-medium mb-1" style={{ color: '#5A4638' }}>
                   Fragrance Notes
@@ -242,12 +242,12 @@ const AddProduct = () => {
                     border: '1px solid #D1BB9E',
                     color: '#5A4638'
                   }}
-                  placeholder="Top notes: ... | Heart notes: ... | Base notes: ..."
+                  placeholder="Notes..."
                 />
               </div>
             </div>
 
-            {/* Image & Stock */}
+          
             <div className="space-y-4">
               <h3 className="text-lg font-semibold pb-2 border-b" style={{ 
                 color: '#5A4638',
@@ -257,7 +257,7 @@ const AddProduct = () => {
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Image URL */}
+                
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium mb-1" style={{ color: '#5A4638' }}>
                     Image URL
@@ -273,14 +273,14 @@ const AddProduct = () => {
                       border: '1px solid #D1BB9E',
                       color: '#5A4638'
                     }}
-                    placeholder="https://example.com/image.jpg"
+                    placeholder="src/assets/pro5.jpg"
                   />
                   <p className="text-xs mt-1" style={{ color: '#8B7355' }}>
                     Enter the full URL of the product image
                   </p>
                 </div>
 
-                {/* Stock */}
+              
                 <div>
                   <label className="block text-sm font-medium mb-1" style={{ color: '#5A4638' }}>
                     Stock Quantity
@@ -300,7 +300,7 @@ const AddProduct = () => {
                   />
                 </div>
 
-                {/* Category */}
+                
                 <div>
                   <label className="block text-sm font-medium mb-1" style={{ color: '#5A4638' }}>
                     Category
@@ -324,7 +324,7 @@ const AddProduct = () => {
                 </div>
               </div>
 
-              {/* Featured Product */}
+            
               <div className="flex items-center space-x-2 pt-2">
                 <input
                   type="checkbox"
@@ -343,7 +343,7 @@ const AddProduct = () => {
               </div>
             </div>
 
-            {/* Preview Section */}
+          
             {formData.image && (
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold" style={{ color: '#5A4638' }}>
@@ -364,7 +364,7 @@ const AddProduct = () => {
               </div>
             )}
 
-            {/* Form Actions */}
+            
             <div className="flex justify-end space-x-4 pt-6 border-t" style={{ borderColor: '#D1BB9E' }}>
               <button
                 type="button"

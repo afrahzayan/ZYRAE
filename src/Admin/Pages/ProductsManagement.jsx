@@ -14,7 +14,7 @@ const ProductsManagement = () => {
     image: ''
   });
 
-  // Fetch products on component mount
+  
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -31,18 +31,18 @@ const ProductsManagement = () => {
     }
   };
 
-  // Filter products based on search term
+  
   const filteredProducts = products.filter(product =>
     product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.collection?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Handle delete product
+  
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
         await api.delete(`/products/${id}`);
-        fetchProducts(); // Refresh the list
+        fetchProducts(); 
       } catch (error) {
         console.error('Error deleting product:', error);
         alert('Failed to delete product');
@@ -50,7 +50,7 @@ const ProductsManagement = () => {
     }
   };
 
-  // Handle edit button click
+  
   const handleEditClick = (product) => {
     setEditingProduct(product.id);
     setEditForm({
@@ -61,7 +61,7 @@ const ProductsManagement = () => {
     });
   };
 
-  // Handle edit form change
+
   const handleEditChange = (e) => {
     const { name, value } = e.target;
     setEditForm(prev => ({
@@ -70,7 +70,7 @@ const ProductsManagement = () => {
     }));
   };
 
-  // Handle save edit
+  
   const handleSaveEdit = async () => {
     if (!editForm.name || !editForm.price) {
       alert('Name and Price are required');
@@ -79,8 +79,8 @@ const ProductsManagement = () => {
 
     try {
       await api.put(`/products/${editingProduct}`, editForm);
-      fetchProducts(); // Refresh the list
-      setEditingProduct(null); // Close edit modal
+      fetchProducts(); 
+      setEditingProduct(null); 
       alert('Product updated successfully!');
     } catch (error) {
       console.error('Error updating product:', error);
@@ -88,7 +88,7 @@ const ProductsManagement = () => {
     }
   };
 
-  // Handle cancel edit
+  
   const handleCancelEdit = () => {
     setEditingProduct(null);
   };
@@ -96,7 +96,7 @@ const ProductsManagement = () => {
   return (
     <Dashboard>
       <div className="space-y-6">
-        {/* Page Header */}
+        
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold" style={{ color: '#5A4638' }}>Products Management</h2>
@@ -117,7 +117,7 @@ const ProductsManagement = () => {
           </button>
         </div>
 
-        {/* Search Bar */}
+
         <div className="relative">
           <input
             type="text"
@@ -142,7 +142,7 @@ const ProductsManagement = () => {
           </svg>
         </div>
 
-        {/* Loading State */}
+        
         {loading ? (
           <div className="text-center py-12">
             <div 
@@ -152,7 +152,7 @@ const ProductsManagement = () => {
             <p className="font-medium" style={{ color: '#A79277' }}>Loading products...</p>
           </div>
         ) : (
-          /* Products Table */
+          
           <div className="rounded-lg overflow-hidden border" style={{ borderColor: '#D1BB9E' }}>
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -174,7 +174,7 @@ const ProductsManagement = () => {
                   ) : (
                     filteredProducts.map((product) => (
                       <React.Fragment key={product.id}>
-                        {/* Product Row */}
+                        
                         <tr 
                           className="border-b hover:bg-white transition-colors"
                           style={{ borderColor: '#EAD8C0' }}
@@ -233,7 +233,7 @@ const ProductsManagement = () => {
                           </td>
                         </tr>
                         
-                        {/* Edit Form Row - Appears below the product being edited */}
+                        
                         {editingProduct === product.id && (
                           <tr className="border-b" style={{ borderColor: '#EAD8C0' }}>
                             <td colSpan="4" className="p-4">
@@ -362,7 +362,7 @@ const ProductsManagement = () => {
           </div>
         )}
 
-        {/* Summary */}
+        
         <div className="text-sm" style={{ color: '#8B7355' }}>
           Showing {filteredProducts.length} of {products.length} products
         </div>

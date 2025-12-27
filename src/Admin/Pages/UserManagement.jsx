@@ -34,11 +34,11 @@ const UsersManagement = () => {
       try {
         const updatedUser = {
           ...user,
-          isBlocked: !user.isBlocked // Toggle block status
+          isBlocked: !user.isBlocked 
         };
         
         await api.put(`/users/${user.id}`, updatedUser);
-        fetchUsers(); // Refresh the list
+        fetchUsers(); 
       } catch (error) {
         console.error('Error blocking/unblocking user:', error);
       }

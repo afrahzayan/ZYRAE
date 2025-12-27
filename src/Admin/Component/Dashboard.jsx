@@ -8,7 +8,7 @@ const Dashboard = ({ children }) => {
   const location = useLocation();
   const { user, logout } = useAuth();
 
-  // Admin menu items for perfume e-commerce
+  
   const menuItems = [
     {
       path: '/admin/home',
@@ -48,9 +48,17 @@ const Dashboard = ({ children }) => {
     }
   ];
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+
+      await logout();
+
+      navigate('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      
+      navigate('/');
+    }
   };
 
   const isActive = (path) => {
@@ -59,13 +67,13 @@ const Dashboard = ({ children }) => {
 
   return (
     <div className="flex h-screen" style={{ backgroundColor: '#FFF2E1' }}>
-      {/* Sidebar */}
+      
       <div 
         className={`${sidebarOpen ? 'w-64' : 'w-20'} flex flex-col transition-all duration-300 shadow-lg`}
         style={{ backgroundColor: '#A79277', borderRight: '1px solid #8B7355' }}
       >
         
-        {/* Sidebar Header */}
+        
         <div className="p-4 flex items-center h-16">
           {sidebarOpen && (
             <h2 className="text-xl font-bold flex-1" style={{ color: '#FFF2E1' }}>Zyraé Admin</h2>
@@ -89,7 +97,7 @@ const Dashboard = ({ children }) => {
           </button>
         </div>
 
-        {/* Navigation Menu */}
+        
         <nav className="flex-1 p-4 space-y-2">
           {menuItems.map((item) => (
             <button
@@ -110,7 +118,7 @@ const Dashboard = ({ children }) => {
           ))}
         </nav>
 
-        {/* User Info & Logout - Only show when sidebar is open */}
+      
         {sidebarOpen && (
           <div className="p-4" style={{ borderTop: '1px solid #8B7355' }}>
             <div className="flex items-center space-x-3 mb-4">
@@ -148,7 +156,7 @@ const Dashboard = ({ children }) => {
           </div>
         )}
 
-        {/* Minimal logout when sidebar collapsed */}
+        
         {!sidebarOpen && (
           <div className="p-4" style={{ borderTop: '1px solid #8B7355' }}>
             <button
@@ -170,9 +178,8 @@ const Dashboard = ({ children }) => {
         )}
       </div>
 
-      {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Navbar */}
+        
         <header 
           className="shadow-sm"
           style={{ 
@@ -201,7 +208,6 @@ const Dashboard = ({ children }) => {
           </div>
         </header>
 
-        {/* Page Content */}
         <main 
           className="flex-1 overflow-auto p-4 sm:p-6"
           style={{ backgroundColor: '#FFF9F0' }}
@@ -214,6 +220,3 @@ const Dashboard = ({ children }) => {
 };
 
 export default Dashboard;
-
-
-

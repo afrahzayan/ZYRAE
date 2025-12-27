@@ -10,13 +10,16 @@ const initialValues = {
 };
 
 function Login() {
-  const { login, loading, error, clearError, isInitializing } = useAuth();
+  const { login, user, loading, error, clearError, isInitializing } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
+    if(user)
+      navigate("/admin/home")
+    
     return () => clearError();
-  }, [clearError]);
+  }, [user]);
 
   const { values, handleBlur, handleChange, handleSubmit, errors, touched } = useFormik({
     initialValues: initialValues,

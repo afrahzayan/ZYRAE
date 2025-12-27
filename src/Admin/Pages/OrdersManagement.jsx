@@ -8,7 +8,7 @@ const OrdersManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  // Fetch orders on component mount
+  
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -25,7 +25,7 @@ const OrdersManagement = () => {
     }
   };
 
-  // Filter orders based on search term and status
+  
   const filteredOrders = orders.filter(order => {
     const matchesSearch = 
       order.orderNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -37,7 +37,7 @@ const OrdersManagement = () => {
     return matchesSearch && matchesStatus;
   });
 
-  // Update order status
+  
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
       const orderToUpdate = orders.find(order => order.id === orderId);
@@ -46,7 +46,7 @@ const OrdersManagement = () => {
       const updatedOrder = { ...orderToUpdate, status: newStatus };
       await api.put(`/orders/${orderId}`, updatedOrder);
       
-      // Update local state
+      
       setOrders(prevOrders => 
         prevOrders.map(order => 
           order.id === orderId ? { ...order, status: newStatus } : order
@@ -58,13 +58,13 @@ const OrdersManagement = () => {
     }
   };
 
-  // Get status color
+  
   const getStatusColor = (status) => {
     switch(status) {
-      case 'processing': return '#F59E0B'; // Yellow
-      case 'shipped': return '#3B82F6'; // Blue
-      case 'delivered': return '#10B981'; // Green
-      case 'cancelled': return '#EF4444'; // Red
+      case 'processing': return '#F59E0B'; 
+      case 'shipped': return '#3B82F6'; 
+      case 'delivered': return '#10B981'; 
+      case 'cancelled': return '#EF4444'; 
       default: return '#8B7355';
     }
   };
@@ -72,7 +72,7 @@ const OrdersManagement = () => {
   return (
     <Dashboard>
       <div className="space-y-6">
-        {/* Page Header */}
+      
         <div>
           <h2 className="text-2xl font-bold" style={{ color: '#5A4638' }}>Orders Management</h2>
           <p className="text-sm" style={{ color: '#8B7355' }}>
@@ -80,9 +80,9 @@ const OrdersManagement = () => {
           </p>
         </div>
 
-        {/* Filters */}
+      
         <div className="flex flex-col sm:flex-row gap-4">
-          {/* Search Bar */}
+          
           <div className="flex-1">
             <input
               type="text"
@@ -98,7 +98,7 @@ const OrdersManagement = () => {
             />
           </div>
 
-          {/* Status Filter */}
+        
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -118,7 +118,7 @@ const OrdersManagement = () => {
           </select>
         </div>
 
-        {/* Loading State */}
+        
         {loading ? (
           <div className="text-center py-12">
             <div 
@@ -128,7 +128,7 @@ const OrdersManagement = () => {
             <p className="font-medium" style={{ color: '#A79277' }}>Loading orders...</p>
           </div>
         ) : (
-          /* Orders Table */
+          
           <div className="rounded-lg overflow-hidden border" style={{ borderColor: '#D1BB9E' }}>
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -213,7 +213,7 @@ const OrdersManagement = () => {
           </div>
         )}
 
-        {/* Summary */}
+        
         <div className="text-sm" style={{ color: '#8B7355' }}>
           Showing {filteredOrders.length} of {orders.length} orders
         </div>
