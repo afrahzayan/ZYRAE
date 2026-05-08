@@ -37,7 +37,7 @@ export const WishlistProvider = ({ children }) => {
     setLoading(true);
     setError('');
     try {
-      const existingItem = wishlistItems.find(item => item.productId === product.id);
+      const existingItem = wishlistItems.find(item => item.productId === product._id);
       
       if (existingItem) {
         setError('Item already in wishlist');
@@ -47,7 +47,7 @@ export const WishlistProvider = ({ children }) => {
 
       const newWishlistItem = {
         id: Date.now().toString(),
-        productId: product.id,
+        productId: product._id,
         name: product.name,
         price: parseFloat(product.price),
         image: product.image,

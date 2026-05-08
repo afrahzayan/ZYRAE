@@ -48,8 +48,7 @@ const Cart = () => {
   const [isClearing, setIsClearing] = useState(false);
 
   const handleQuantityChange = (itemId, change) => {
-    const item = cartItems.find(item => item.id === itemId);
-    if (item) {
+  const item = cartItems.find(item => item._id === itemId);    if (item) {
       updateQuantity(itemId, item.quantity + change);
     }
   };
@@ -123,7 +122,7 @@ const Cart = () => {
               <div className="space-y-4">
                 {cartItems.map((item) => (
                   <div
-                    key={item.id}
+                    key={item._id}
                     className="rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center gap-6"
                     style={{
                       backgroundColor: '#FFF9F0',
@@ -156,7 +155,7 @@ const Cart = () => {
                       <div className="flex items-center space-x-4">
                         <div className="flex items-center space-x-2">
                           <button
-                            onClick={() => handleQuantityChange(item.id, -1)}
+                            onClick={() => handleQuantityChange(item._id, -1)}
                             disabled={item.quantity <= 1}
                             className="p-1 rounded disabled:opacity-50 transition duration-200"
                             style={{
@@ -176,7 +175,7 @@ const Cart = () => {
                             {item.quantity}
                           </span>
                           <button
-                            onClick={() => handleQuantityChange(item.id, 1)}
+                            onClick={() => handleQuantityChange(item._id, 1)}
                             className="p-1 rounded transition duration-200"
                             style={{
                               backgroundColor: '#A79277',
@@ -196,7 +195,7 @@ const Cart = () => {
 
                     
                     <button
-                      onClick={() => removeFromCart(item.id)}
+                      onClick={() => removeFromCart(item._id)}
                       disabled={loading}
                       className="p-2 rounded-lg transition duration-200 hover:bg-red-50 self-start sm:self-center"
                       style={{ color: '#EF5350' }}

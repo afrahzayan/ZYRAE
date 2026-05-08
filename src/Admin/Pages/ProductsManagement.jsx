@@ -52,7 +52,7 @@ const ProductsManagement = () => {
 
   
   const handleEditClick = (product) => {
-    setEditingProduct(product.id);
+    setEditingProduct(product._id);
     setEditForm({
       name: product.name || '',
       collection: product.collection || '',
@@ -173,7 +173,7 @@ const ProductsManagement = () => {
                     </tr>
                   ) : (
                     filteredProducts.map((product) => (
-                      <React.Fragment key={product.id}>
+                      <React.Fragment key={product._id}>
                         
                         <tr 
                           className="border-b hover:bg-white transition-colors"
@@ -191,7 +191,7 @@ const ProductsManagement = () => {
                               </div>
                               <div>
                                 <p className="font-medium" style={{ color: '#5A4638' }}>{product.name}</p>
-                                <p className="text-sm" style={{ color: '#8B7355' }}>ID: {product.id}</p>
+                                <p className="text-sm" style={{ color: '#8B7355' }}>ID: {product._id}</p>
                               </div>
                             </div>
                           </td>
@@ -219,7 +219,7 @@ const ProductsManagement = () => {
                                 Edit
                               </button>
                               <button
-                                onClick={() => handleDelete(product.id)}
+                                onClick={() => handleDelete(product._id)}
                                 className="px-3 py-1 text-sm rounded transition duration-200"
                                 style={{ 
                                   backgroundColor: '#FFEBEE',
@@ -234,7 +234,7 @@ const ProductsManagement = () => {
                         </tr>
                         
                         
-                        {editingProduct === product.id && (
+                        {editingProduct === product._id && (
                           <tr className="border-b" style={{ borderColor: '#EAD8C0' }}>
                             <td colSpan="4" className="p-4">
                               <div className="bg-white p-4 rounded-lg border" style={{ 

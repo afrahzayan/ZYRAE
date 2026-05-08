@@ -19,6 +19,7 @@ import UsersManagement from './Admin/Pages/UserManagement'
 import AdminHome from './Admin/Pages/AdminHome'
 import AdminRoute from './Admin/Component/AdminRoute'
 import AddProduct from './Admin/Pages/AddProduct'
+import OTPVerification from './Authentication/otpVerification'
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
       <Route path='/card' element={<Card />} />
       <Route path='/philosophy' element={<Philosophy />} />
       <Route path='/orders' element={<OrdersPage />} />
+      <Route path="/OTP-verification" element={<OTPVerification />} />
 
     
       <Route path='/admin/home' element={

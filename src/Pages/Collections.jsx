@@ -63,27 +63,40 @@ const Collections = () => {
   }, [collectionName]);
 
   const fetchProductsByCollection = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await api.get('/products');
-      const allProducts = response.data;
-      
-      
-      const filteredProducts = allProducts.filter(product => 
-        product.collection && product.collection.toLowerCase() === collectionName.toLowerCase()
-      );
-      
-      setProducts(filteredProducts);
-      
-    } catch (err) {
-      console.error('Error fetching products:', err);
-      setError('Failed to load collection products. Please try again.');
-    } finally {
-      setLoading(false);
+  try {
+    setLoading(true);
+    setError(null);
+    
+    const response = await api.get('/product');
+    console.log('All products:', response.data);
+    
+    const allProducts = response.data.products || [];
+    
+    // Format products to have both 'id' and '_id'
+    const formattedProducts = allProducts.map(product => ({
+      ...product,
+      _id: product.id,
+      id: product.id
+    }));
+    
+    // Filter by collection
+    const filteredProducts = formattedProducts.filter(product => 
+      product.collection && product.collection.toLowerCase() === collectionName.toLowerCase()
+    );
+    
+    setProducts(filteredProducts);
+    
+    if (filteredProducts.length === 0) {
+      console.log('No products found for collection:', collectionName);
     }
-  };
+    
+  } catch (err) {
+    console.error('Error fetching products:', err);
+    setError('Failed to load collection products. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
 
 
 
@@ -95,11 +108,11 @@ const Collections = () => {
       return;
     }
 
-    setAddingToCart(prev => ({ ...prev, [product.id]: true }));
+    setAddingToCart(prev => ({ ...prev, [product._id]: true }));
     
     try {
       const productForCart = {
-        id: product.id,
+        id: product._id,
         name: product.name,
         price: parseFloat(product.price) || 0,
         image: product.image
@@ -110,7 +123,7 @@ const Collections = () => {
     } catch (error) {
       console.error('Error adding to cart:', error);
     } finally {
-      setAddingToCart(prev => ({ ...prev, [product.id]: false }));
+      setAddingToCart(prev => ({ ...prev, [product._id]: false }));
     }
   };
 
@@ -123,20 +136,20 @@ const Collections = () => {
       return;
     }
 
-    setAddingToWishlist(prev => ({ ...prev, [product.id]: true }));
+    setAddingToWishlist(prev => ({ ...prev, [product._id]: true }));
     
     try {
-      if (isInWishlist(product.id)) {
+      if (isInWishlist(product._id)) {
         
         const wishlistResponse = await api.get('/wishlist');
-        const wishlistItem = wishlistResponse.data.find(item => item.productId === product.id);
+        const wishlistItem = wishlistResponse.data.find(item => item.productId === product._id);
         if (wishlistItem) {
           await removeFromWishlist(wishlistItem.id);
         }
       } else {
         
         const productForWishlist = {
-          id: product.id,
+          id: product._id,
           name: product.name,
           price: parseFloat(product.price) || 0,
           image: product.image
@@ -146,7 +159,7 @@ const Collections = () => {
     } catch (error) {
       console.error('Error toggling wishlist:', error);
     } finally {
-      setAddingToWishlist(prev => ({ ...prev, [product.id]: false }));
+      setAddingToWishlist(prev => ({ ...prev, [product._id]: false }));
     }
   };
 
@@ -259,10 +272,10 @@ const Collections = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((product) => (
                 <div 
-                  key={product.id}
+                  key={product._id}
                   className="rounded-xl shadow-md hover:shadow-xl transition-all duration-300 group/card cursor-pointer overflow-hidden transform hover:-translate-y-1 border"
                   style={{ backgroundColor: '#FFF2E1', borderColor: '#EAD8C0' }}
-                  onClick={() => handleProductClick(product.id)}
+                  onClick={() => handleProductClick(product._id)}
                 >
                   
                   <div className="relative overflow-hidden rounded-t-xl bg-gray-50">
@@ -278,11 +291,11 @@ const Collections = () => {
                     
                     <button 
                       onClick={(e) => handleWishlistClick(e, product)}
-                      disabled={addingToWishlist[product.id]}
+                      disabled={addingToWishlist[product._id]}
                       className="absolute top-2 right-2 rounded-full p-2 shadow-lg hover:bg-opacity-90 transition-all opacity-0 group-hover/card:opacity-100 disabled:opacity-50"
                       style={{ backgroundColor: '#EAD8C0' }}
                     >
-                      {isInWishlist(product.id) ? (
+                      {isInWishlist(product._id) ? (
                         <HeartIconFilled className="w-5 h-5" style={{ color: '#EF5350' }} />
                       ) : (
                         <HeartIconOutline className="w-5 h-5" style={{ color: '#A79277' }} />
@@ -292,12 +305,12 @@ const Collections = () => {
                     
                     <button 
                       onClick={(e) => handleAddToCart(e, product)}
-                      disabled={addingToCart[product.id]}
+                      disabled={addingToCart[product._id]}
                       className="absolute bottom-2 right-2 px-3 py-1 rounded-full text-sm font-medium opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 hover:opacity-90 disabled:opacity-50 flex items-center"
                       style={{ backgroundColor: '#A79277', color: '#FFF2E1' }}
                     >
                       <ShoppingBagIcon className="w-4 h-4 mr-1" />
-                      {addingToCart[product.id] ? 'Adding...' : 'Add to Cart'}
+                      {addingToCart[product._id] ? 'Adding...' : 'Add to Cart'}
                     </button>
                   </div>
 

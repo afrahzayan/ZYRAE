@@ -10,14 +10,14 @@ import { CartProvider } from './Context/CartContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
+    <AuthProvider>
     <CartProvider>
     <WishlistProvider>
-    <AuthProvider>
       <BrowserRouter>
     <App />
       </BrowserRouter>
-    </AuthProvider>
     </WishlistProvider>
     </CartProvider>
+    </AuthProvider>
   </StrictMode>,
 )

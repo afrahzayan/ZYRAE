@@ -81,21 +81,33 @@ function Card() {
   const { addToCart } = useCart()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await api.get('/products')
-        const firstSixProducts = response.data.slice(0, 6)
-        setProducts(firstSixProducts)
-        setLoading(false)
-      } catch (error) {
-        console.error('Error fetching products:', error)
-        setLoading(false)
+useEffect(() => {
+  const fetchProducts = async () => {
+    try {
+      const response = await api.get('/product');
+      console.log('Card products response:', response.data);
+      
+      if (response.data && response.data.products) {
+        // Format products to have both 'id' and '_id'
+        const formattedProducts = response.data.products.slice(0, 6).map(product => ({
+          ...product,
+          _id: product.id,
+          id: product.id
+        }));
+        
+        setProducts(formattedProducts);
+      } else {
+        setProducts([]);
       }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    fetchProducts()
-  }, [])
+  fetchProducts();
+}, []);
 
   const checkScrollPosition = () => {
     const container = containerRef.current
@@ -132,11 +144,11 @@ function Card() {
       return
     }
 
-    setAddingToCart(prev => ({ ...prev, [product.id]: true }))
+    setAddingToCart(prev => ({ ...prev, [product._id]: true }))
     
     try {
       const productForCart = {
-        id: product.id,
+        id: product._id,
         name: product.name,
         price: parseFloat(product.price) || 0,
         image: product.image
@@ -153,7 +165,7 @@ function Card() {
       console.error('Error adding to cart:', error)
       showToast('An error occurred. Please try again.', 'error')
     } finally {
-      setAddingToCart(prev => ({ ...prev, [product.id]: false }))
+      setAddingToCart(prev => ({ ...prev, [product._id]: false }))
     }
   }
 
@@ -165,19 +177,19 @@ function Card() {
       return
     }
 
-    setAddingToWishlist(prev => ({ ...prev, [product.id]: true }))
+    setAddingToWishlist(prev => ({ ...prev, [product._id]: true }))
     
     try {
-      if (isInWishlist(product.id)) {
+      if (isInWishlist(product._id)) {
         const wishlistResponse = await api.get('/wishlist')
-        const wishlistItem = wishlistResponse.data.find(item => item.productId === product.id)
+        const wishlistItem = wishlistResponse.data.find(item => item.productId === product._id)
         if (wishlistItem) {
           await removeFromWishlist(wishlistItem.id)
           showToast(`${product.name} removed from wishlist`, 'success')
         }
       } else {
         const productForWishlist = {
-          id: product.id,
+          id: product._id,
           name: product.name,
           price: parseFloat(product.price) || 0,
           image: product.image
@@ -189,7 +201,7 @@ function Card() {
       console.error('Error toggling wishlist:', error)
       showToast('Failed to update wishlist. Please try again.', 'error')
     } finally {
-      setAddingToWishlist(prev => ({ ...prev, [product.id]: false }))
+      setAddingToWishlist(prev => ({ ...prev, [product._id]: false }))
     }
   }
 
@@ -250,10 +262,10 @@ function Card() {
           >
             {products.map((product) => (
               <div 
-                key={product.id}
+                key={product._id}
                 className="flex-shrink-0 w-72 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 group/card cursor-pointer overflow-hidden transform hover:-translate-y-1 border"
                 style={{ backgroundColor: '#FFF2E1', borderColor: '#EAD8C0' }}
-                onClick={() => handleProductClick(product.id)}
+                onClick={() => handleProductClick(product._id)}
               >
                 <div className="relative overflow-hidden rounded-t-xl bg-gray-50">
                   <img 
@@ -267,12 +279,12 @@ function Card() {
                   
                   <button 
                     onClick={(e) => handleWishlistClick(e, product)}
-                    disabled={addingToWishlist[product.id]}
+                    disabled={addingToWishlist[product._id]}
                     className="absolute top-2 right-2 rounded-full p-2 shadow-lg hover:bg-opacity-90 transition-all opacity-0 group-hover/card:opacity-100 disabled:opacity-50"
                     style={{ backgroundColor: '#EAD8C0' }}
-                    title={isInWishlist(product.id) ? "Remove from Wishlist" : "Add to Wishlist"}
+                    title={isInWishlist(product._id) ? "Remove from Wishlist" : "Add to Wishlist"}
                   >
-                    {isInWishlist(product.id) ? (
+                    {isInWishlist(product._id) ? (
                       <HeartIconFilled className="w-5 h-5" style={{ color: '#EF5350' }} />
                     ) : (
                       <HeartIconOutline className="w-5 h-5" style={{ color: '#A79277' }} />
@@ -281,12 +293,12 @@ function Card() {
 
                   <button 
                     onClick={(e) => handleAddToCart(e, product)}
-                    disabled={addingToCart[product.id]}
+                    disabled={addingToCart[product._id]}
                     className="absolute bottom-2 right-2 px-3 py-1 rounded-full text-sm font-medium opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 hover:opacity-90 disabled:opacity-50 flex items-center"
                     style={{ backgroundColor: '#A79277', color: '#FFF2E1' }}
                   >
                     <ShoppingBagIcon className="w-4 h-4 mr-1" />
-                    {addingToCart[product.id] ? 'Adding...' : 'Add to Cart'}
+                    {addingToCart[product._id] ? 'Adding...' : 'Add to Cart'}
                   </button>
 
                   {product.collection && (
