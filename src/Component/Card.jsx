@@ -28,7 +28,6 @@ const ToastNotification = ({ message, type, onClose }) => {
     const timer = setTimeout(() => {
       onClose()
     }, 3000)
-
     return () => clearTimeout(timer)
   }, [onClose])
 
@@ -81,33 +80,32 @@ function Card() {
   const { addToCart } = useCart()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
 
-useEffect(() => {
-  const fetchProducts = async () => {
-    try {
-      const response = await api.get('/product');
-      console.log('Card products response:', response.data);
-      
-      if (response.data && response.data.products) {
-        // Format products to have both 'id' and '_id'
-        const formattedProducts = response.data.products.slice(0, 6).map(product => ({
-          ...product,
-          _id: product.id,
-          id: product.id
-        }));
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await api.get('/product');
+        console.log('Card products response:', response.data);
         
-        setProducts(formattedProducts);
-      } else {
-        setProducts([]);
+        if (response.data && response.data.products) {
+          const formattedProducts = response.data.products.slice(0, 6).map(product => ({
+            ...product,
+            _id: product.id,
+            id: product.id
+          }));
+          
+          setProducts(formattedProducts);
+        } else {
+          setProducts([]);
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching products:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  fetchProducts();
-}, []);
+    fetchProducts();
+  }, []);
 
   const checkScrollPosition = () => {
     const container = containerRef.current
@@ -169,6 +167,7 @@ useEffect(() => {
     }
   }
 
+  // FIXED: Simplified wishlist toggle function
   const handleWishlistClick = async (e, product) => {
     e.stopPropagation()
     
@@ -181,21 +180,28 @@ useEffect(() => {
     
     try {
       if (isInWishlist(product._id)) {
-        const wishlistResponse = await api.get('/wishlist')
-        const wishlistItem = wishlistResponse.data.find(item => item.productId === product._id)
-        if (wishlistItem) {
-          await removeFromWishlist(wishlistItem.id)
+        // Remove from wishlist directly using product ID
+        const success = await removeFromWishlist(product._id)
+        if (success) {
           showToast(`${product.name} removed from wishlist`, 'success')
+        } else {
+          showToast('Failed to remove from wishlist', 'error')
         }
       } else {
+        // Add to wishlist
         const productForWishlist = {
           id: product._id,
           name: product.name,
           price: parseFloat(product.price) || 0,
-          image: product.image
+          image: product.image,
+          description: product.description || ''
         }
-        await addToWishlist(productForWishlist)
-        showToast(`${product.name} added to wishlist!`, 'success')
+        const success = await addToWishlist(productForWishlist)
+        if (success) {
+          showToast(`${product.name} added to wishlist!`, 'success')
+        } else {
+          showToast('Failed to add to wishlist', 'error')
+        }
       }
     } catch (error) {
       console.error('Error toggling wishlist:', error)

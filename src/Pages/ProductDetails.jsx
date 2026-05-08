@@ -33,21 +33,14 @@ const HeartIconFilled = ({ className }) => (
 );
 
 const ToastNotification = ({ message, type, onClose }) => {
-
   useEffect(() => {
-
     const timer = setTimeout(() => {
       onClose();
     }, 3000);
-
     return () => clearTimeout(timer);
-
   }, [onClose]);
 
-  const bgColor =
-    type === 'success'
-      ? '#10B981'
-      : '#EF4444';
+  const bgColor = type === 'success' ? '#10B981' : '#EF4444';
 
   return (
     <div className="fixed top-20 right-4 z-50 animate-slideIn">
@@ -77,21 +70,12 @@ const ToastNotification = ({ message, type, onClose }) => {
             />
           )}
         </svg>
-
-        <span className="font-medium">
-          {message}
-        </span>
-
+        <span className="font-medium">{message}</span>
         <button
           onClick={onClose}
           className="ml-4 text-white hover:text-gray-200"
         >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -106,42 +90,25 @@ const ToastNotification = ({ message, type, onClose }) => {
 };
 
 const ProductDetails = () => {
-
   const { id } = useParams();
-
   const navigate = useNavigate();
-
   const { user } = useAuth();
-
   const { addToCart } = useCart();
-
   const {
     addToWishlist,
     removeFromWishlist,
     isInWishlist,
+    fetchWishlistItems, // Add this to refresh wishlist if needed
   } = useWishlist();
 
   const [product, setProduct] = useState(null);
-
   const [loading, setLoading] = useState(true);
-
   const [error, setError] = useState(null);
-
-  const [selectedSize, setSelectedSize] =
-    useState('50ml');
-
-  const [quantity, setQuantity] =
-    useState(1);
-
-  const [addingToCart, setAddingToCart] =
-    useState(false);
-
-  const [addingToWishlist, setAddingToWishlist] =
-    useState(false);
-
-  const [currentPrice, setCurrentPrice] =
-    useState(0);
-
+  const [selectedSize, setSelectedSize] = useState('50ml');
+  const [quantity, setQuantity] = useState(1);
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [addingToWishlist, setAddingToWishlist] = useState(false);
+  const [currentPrice, setCurrentPrice] = useState(0);
   const [toast, setToast] = useState({
     show: false,
     message: '',
@@ -149,7 +116,6 @@ const ProductDetails = () => {
   });
 
   const sizes = ['50ml', '100ml'];
-
   const sizePriceMultipliers = {
     '50ml': 1,
     '100ml': 2,
@@ -160,74 +126,58 @@ const ProductDetails = () => {
   }, [id]);
 
   useEffect(() => {
-
     if (product && product.price) {
-
-      const basePrice =
-        parseFloat(product.price) || 0;
-
-      const multiplier =
-        sizePriceMultipliers[selectedSize] || 1;
-
+      const basePrice = parseFloat(product.price) || 0;
+      const multiplier = sizePriceMultipliers[selectedSize] || 1;
       setCurrentPrice(basePrice * multiplier);
     }
-
   }, [product, selectedSize]);
 
   const fetchProductDetails = async () => {
-  try {
-    setLoading(true);
-    
-    if (!id) {
-      console.error('No product ID provided');
-      setError('Invalid product ID');
+    try {
+      setLoading(true);
+      
+      if (!id) {
+        console.error('No product ID provided');
+        setError('Invalid product ID');
+        setLoading(false);
+        return;
+      }
+      
+      console.log('Fetching product with ID:', id);
+      
+      const response = await api.get(`/product/${id}`);
+      console.log('API Response:', response.data);
+      
+      if (response.data && response.data.product) {
+        const productData = response.data.product;
+        const formattedProduct = {
+          ...productData,
+          _id: productData.id,
+          id: productData.id
+        };
+        
+        setProduct(formattedProduct);
+        setError(null);
+      } else {
+        setError('Product not found');
+      }
+      
+    } catch (err) {
+      console.error('Error fetching product details:', err);
+      if (err.response?.status === 404) {
+        setError('Product not found');
+      } else if (err.response?.status === 500) {
+        setError('Server error. Please try again later.');
+      } else {
+        setError('Failed to load product details. Please try again.');
+      }
+    } finally {
       setLoading(false);
-      return;
     }
-    
-    console.log('Fetching product with ID:', id);
-    
-    const response = await api.get(`/product/${id}`);
-    console.log('API Response:', response.data);
-    
-    // FIX: Your backend returns 'product' with 'id' field, not '_id'
-    if (response.data && response.data.product) {
-      const productData = response.data.product;
-      
-      // Create a consistent product object with both 'id' and '_id'
-      const formattedProduct = {
-        ...productData,
-        _id: productData.id,  // Add _id field for frontend compatibility
-        id: productData.id
-      };
-      
-      setProduct(formattedProduct);
-      setError(null);
-    } else {
-      setError('Product not found');
-    }
-    
-  } catch (err) {
-    console.error('Error fetching product details:', err);
-    console.error('Error response:', err.response);
-    
-    if (err.response?.status === 404) {
-      setError('Product not found');
-    } else if (err.response?.status === 500) {
-      setError('Server error. Please try again later.');
-    } else {
-      setError('Failed to load product details. Please try again.');
-    }
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
-  const showToast = (
-    message,
-    type = 'success'
-  ) => {
-
+  const showToast = (message, type = 'success') => {
     setToast({
       show: true,
       message,
@@ -240,215 +190,145 @@ const ProductDetails = () => {
   };
 
   const handleAddToCart = async () => {
-
     if (!user) {
-
       navigate('/login', {
         state: {
-          message:
-            'Please login to add items to cart',
+          message: 'Please login to add items to cart',
         },
       });
-
       return;
     }
 
     setAddingToCart(true);
 
     try {
-
       const productWithDetails = {
-
         id: product._id,
-
         name: product.name,
-
         price: currentPrice,
-
         image: product.image,
-
         size: selectedSize,
-
         quantity: quantity,
-
       };
 
-      const success =
-        await addToCart(productWithDetails);
+      const success = await addToCart(productWithDetails);
 
       if (success) {
-
-        showToast(
-          `${product.name} (${selectedSize}) added to cart successfully!`,
-          'success'
-        );
-
+        showToast(`${product.name} (${selectedSize}) added to cart successfully!`, 'success');
       } else {
-
-        showToast(
-          'Failed to add item to cart. Please try again.',
-          'error'
-        );
+        showToast('Failed to add item to cart. Please try again.', 'error');
       }
-
     } catch (error) {
-
-      console.error(
-        'Error adding to cart:',
-        error
-      );
-
-      showToast(
-        'An error occurred. Please try again.',
-        'error'
-      );
-
+      console.error('Error adding to cart:', error);
+      showToast('An error occurred. Please try again.', 'error');
     } finally {
-
       setAddingToCart(false);
-
     }
   };
 
+  // FIXED: Updated wishlist toggle function
   const handleWishlistToggle = async () => {
-
     if (!user) {
-
       navigate('/login', {
         state: {
-          message:
-            'Please login to add items to wishlist',
+          message: 'Please login to add items to wishlist',
         },
       });
-
       return;
     }
 
     setAddingToWishlist(true);
 
     try {
-
       if (isInWishlist(product._id)) {
-
-        const wishlistResponse =
-          await api.get('/wishlist');
-
-        const wishlistItem =
-          wishlistResponse.data.find(
-            item =>
-              item.productId === product._id
-          );
-
-        if (wishlistItem) {
-
-          await removeFromWishlist(
-            wishlistItem._id
-          );
-
-          showToast(
-            `${product.name} removed from wishlist`,
-            'success'
-          );
+        // Remove from wishlist using product ID
+        const success = await removeFromWishlist(product._id);
+        if (success) {
+          showToast(`${product.name} removed from wishlist`, 'success');
+        } else {
+          showToast('Failed to remove from wishlist', 'error');
         }
-
       } else {
-
+        // Add to wishlist
         const productForWishlist = {
-
           id: product._id,
-
           name: product.name,
-
-          price:
-            parseFloat(product.price) || 0,
-
+          price: parseFloat(product.price) || 0,
           image: product.image,
-
+          description: product.description || ''
         };
-
-        await addToWishlist(productForWishlist);
-
-        showToast(
-          `${product.name} added to wishlist!`,
-          'success'
-        );
+        
+        const success = await addToWishlist(productForWishlist);
+        if (success) {
+          showToast(`${product.name} added to wishlist!`, 'success');
+        } else {
+          showToast('Failed to add to wishlist', 'error');
+        }
       }
-
     } catch (error) {
-
-      console.error(
-        'Error toggling wishlist:',
-        error
-      );
-
-      showToast(
-        'Failed to update wishlist. Please try again.',
-        'error'
-      );
-
+      console.error('Error toggling wishlist:', error);
+      showToast('Failed to update wishlist. Please try again.', 'error');
     } finally {
-
       setAddingToWishlist(false);
-
     }
   };
 
   const handleBuyNow = async () => {
-
     if (!user) {
-
       navigate('/login', {
         state: {
-          message:
-            'Please login to buy products',
+          message: 'Please login to buy products',
         },
       });
-
       return;
     }
 
     await handleAddToCart();
-
     navigate('/cart');
   };
 
   const calculateTotalPrice = () => {
-    return (
-      currentPrice * quantity
-    ).toFixed(2);
+    return (currentPrice * quantity).toFixed(2);
   };
 
   if (loading) {
-
     return (
       <>
         <Navbar />
-
         <div
           className="min-h-screen flex items-center justify-center"
-          style={{
-            backgroundColor: '#FFF2E1',
-          }}
+          style={{ backgroundColor: '#FFF2E1' }}
         >
-          <p>Loading...</p>
+          <div className="text-center">
+            <div 
+              className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2"
+              style={{ borderColor: '#A79277' }}
+            ></div>
+            <p className="mt-4" style={{ color: '#A79277' }}>Loading...</p>
+          </div>
         </div>
       </>
     );
   }
 
   if (error || !product) {
-
     return (
       <>
         <Navbar />
-
         <div
           className="min-h-screen flex items-center justify-center"
-          style={{
-            backgroundColor: '#FFF2E1',
-          }}
+          style={{ backgroundColor: '#FFF2E1' }}
         >
-          <p>{error || 'Product not found'}</p>
+          <div className="text-center p-8 rounded-xl" style={{ backgroundColor: '#EAD8C0' }}>
+            <p className="mb-4" style={{ color: '#5A4638' }}>{error || 'Product not found'}</p>
+            <button
+              onClick={() => navigate('/products')}
+              className="px-4 py-2 rounded-lg"
+              style={{ backgroundColor: '#A79277', color: '#FFF2E1' }}
+            >
+              Back to Products
+            </button>
+          </div>
         </div>
       </>
     );
@@ -460,104 +340,58 @@ const ProductDetails = () => {
         <ToastNotification
           message={toast.message}
           type={toast.type}
-          onClose={() =>
-            setToast({
-              ...toast,
-              show: false,
-            })
-          }
+          onClose={() => setToast({ ...toast, show: false })}
         />
       )}
 
       <Navbar />
 
-      <div
-        className="min-h-screen"
-        style={{
-          backgroundColor: '#FFF2E1',
-        }}
-      >
+      <div className="min-h-screen" style={{ backgroundColor: '#FFF2E1' }}>
         <div className="max-w-7xl mx-auto px-4 py-8">
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-
             <div>
               <img
                 src={product.image}
                 alt={product.name}
                 className="w-full rounded-xl shadow-lg"
+                onError={(e) => {
+                  e.target.src = 'https://via.placeholder.com/500x500?text=Image+Not+Found';
+                }}
               />
             </div>
 
             <div>
-
-              <h1
-                className="text-4xl font-bold mb-4"
-                style={{ color: '#5A4638' }}
-              >
+              <h1 className="text-4xl font-bold mb-4" style={{ color: '#5A4638' }}>
                 {product.name}
               </h1>
 
-              <p
-                className="text-3xl font-bold mb-6"
-                style={{ color: '#A79277' }}
-              >
+              <p className="text-3xl font-bold mb-6" style={{ color: '#A79277' }}>
                 ₹{currentPrice.toFixed(2)}
               </p>
 
               <div className="mb-6">
-
-                <h3
-                  className="font-semibold mb-2"
-                  style={{ color: '#5A4638' }}
-                >
+                <h3 className="font-semibold mb-2" style={{ color: '#5A4638' }}>
                   Description
                 </h3>
-
-                <p
-                  style={{ color: '#8B7355' }}
-                >
-                  {product.description}
-                </p>
-
+                <p style={{ color: '#8B7355' }}>{product.description}</p>
               </div>
 
               <div className="mb-6">
-
-                <h3
-                  className="font-semibold mb-4"
-                  style={{ color: '#5A4638' }}
-                >
+                <h3 className="font-semibold mb-4" style={{ color: '#5A4638' }}>
                   Select Size
                 </h3>
-
                 <div className="flex gap-4">
-
                   {sizes.map((size) => {
-
-                    const isSelected =
-                      selectedSize === size;
-
+                    const isSelected = selectedSize === size;
                     return (
                       <button
                         key={size}
-                        onClick={() =>
-                          handleSizeChange(size)
-                        }
-                        className="px-6 py-3 rounded-lg"
+                        onClick={() => handleSizeChange(size)}
+                        className="px-6 py-3 rounded-lg transition duration-200"
                         style={{
-                          backgroundColor:
-                            isSelected
-                              ? '#A79277'
-                              : '#FFF2E1',
-
-                          color:
-                            isSelected
-                              ? '#FFF2E1'
-                              : '#5A4638',
-
-                          border:
-                            '1px solid #D1BB9E',
+                          backgroundColor: isSelected ? '#A79277' : '#FFF2E1',
+                          color: isSelected ? '#FFF2E1' : '#5A4638',
+                          border: '1px solid #D1BB9E',
                         }}
                       >
                         {size}
@@ -568,79 +402,46 @@ const ProductDetails = () => {
               </div>
 
               <div className="mb-6">
-
-                <h3
-                  className="font-semibold mb-4"
-                  style={{ color: '#5A4638' }}
-                >
+                <h3 className="font-semibold mb-4" style={{ color: '#5A4638' }}>
                   Quantity
                 </h3>
-
                 <div className="flex items-center gap-4">
-
                   <button
-                    onClick={() =>
-                      setQuantity(prev =>
-                        Math.max(1, prev - 1)
-                      )
-                    }
-                    className="px-4 py-2 rounded-lg"
-                    style={{
-                      backgroundColor: '#A79277',
-                      color: '#FFF2E1',
-                    }}
+                    onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                    className="px-4 py-2 rounded-lg hover:opacity-90 transition duration-200"
+                    style={{ backgroundColor: '#A79277', color: '#FFF2E1' }}
                   >
                     -
                   </button>
-
-                  <span>{quantity}</span>
-
+                  <span className="text-lg" style={{ color: '#5A4638' }}>{quantity}</span>
                   <button
-                    onClick={() =>
-                      setQuantity(prev => prev + 1)
-                    }
-                    className="px-4 py-2 rounded-lg"
-                    style={{
-                      backgroundColor: '#A79277',
-                      color: '#FFF2E1',
-                    }}
+                    onClick={() => setQuantity(prev => prev + 1)}
+                    className="px-4 py-2 rounded-lg hover:opacity-90 transition duration-200"
+                    style={{ backgroundColor: '#A79277', color: '#FFF2E1' }}
                   >
                     +
                   </button>
-
                 </div>
               </div>
 
               <div className="flex gap-4">
-
                 <button
                   onClick={handleAddToCart}
                   disabled={addingToCart}
-                  className="flex-1 py-4 rounded-lg"
-                  style={{
-                    backgroundColor: '#A79277',
-                    color: '#FFF2E1',
-                  }}
+                  className="flex-1 py-4 rounded-lg hover:opacity-90 transition duration-200 disabled:opacity-50"
+                  style={{ backgroundColor: '#A79277', color: '#FFF2E1' }}
                 >
-                  {addingToCart
-                    ? 'Adding...'
-                    : 'Add to Cart'}
+                  {addingToCart ? 'Adding...' : 'Add to Cart'}
                 </button>
 
                 <button
                   onClick={handleWishlistToggle}
                   disabled={addingToWishlist}
-                  className="p-4 rounded-lg"
+                  className="p-4 rounded-lg hover:opacity-90 transition duration-200 disabled:opacity-50"
                   style={{
                     backgroundColor: '#FFF2E1',
-
-                    border:
-                      '1px solid #D1BB9E',
-
-                    color:
-                      isInWishlist(product._id)
-                        ? '#EF5350'
-                        : '#5A4638',
+                    border: '1px solid #D1BB9E',
+                    color: isInWishlist(product._id) ? '#EF5350' : '#5A4638',
                   }}
                 >
                   {isInWishlist(product._id) ? (
@@ -649,20 +450,15 @@ const ProductDetails = () => {
                     <HeartIconOutline className="w-6 h-6" />
                   )}
                 </button>
-
               </div>
 
               <button
                 onClick={handleBuyNow}
-                className="w-full mt-4 py-4 rounded-lg"
-                style={{
-                  backgroundColor: '#5A4638',
-                  color: '#FFF2E1',
-                }}
+                className="w-full mt-4 py-4 rounded-lg hover:opacity-90 transition duration-200"
+                style={{ backgroundColor: '#5A4638', color: '#FFF2E1' }}
               >
                 Buy Now (₹{calculateTotalPrice()})
               </button>
-
             </div>
           </div>
         </div>

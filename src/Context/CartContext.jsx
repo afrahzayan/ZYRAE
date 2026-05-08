@@ -185,35 +185,40 @@ const addToCart = async (product) => {
 
 
 
-  const clearCart = async () => {
+  // CLEAR CART - Improved version
+const clearCart = async () => {
+    if (!user) {
+        setError("Please login to clear cart");
+        return false;
+    }
 
     setLoading(true);
+    setError("");
 
     try {
-
-      for (const item of cartItems) {
-
-        await api.delete(`/cart/${item._id}`);
-      }
-
-      setCartItems([]);
-
-      return true;
+        // Option 1: Delete all items one by one (current approach)
+        const deletePromises = cartItems.map(item => 
+            api.delete(`/cart/${item._id}`).catch(err => {
+                console.error(`Failed to delete item ${item._id}:`, err);
+                return null;
+            })
+        );
+        
+        await Promise.all(deletePromises);
+        
+        // Clear local state
+        setCartItems([]);
+        
+        return true;
 
     } catch (error) {
-
-      console.error("Error clearing cart:", error);
-
-      setError("Failed to clear cart");
-
-      return false;
-
+        console.error("Error clearing cart:", error);
+        setError("Failed to clear cart");
+        return false;
     } finally {
-
-      setLoading(false);
-
+        setLoading(false);
     }
-  };
+};
 
 
 

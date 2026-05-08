@@ -1,4 +1,3 @@
-
 import { useWishlist } from '../Context/WishlistContext';
 import { useCart } from '../Context/CartContext';
 import { Link } from 'react-router-dom';
@@ -10,13 +9,11 @@ const HeartIconFilled = ({ className }) => (
   </svg>
 );
 
-
 const ShoppingBagIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
   </svg>
 );
-
 
 const DeleteIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -40,7 +37,29 @@ const Wishlist = () => {
     await moveToCart(item, cart);
   };
 
-  
+  const handleRemoveItem = async (item) => {
+    // Use product _id to remove
+    const productId = item._id || item.id;
+    await removeFromWishlist(productId);
+  };
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFF2E1' }}>
+          <div className="text-center">
+            <div 
+              className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2" 
+              style={{ borderColor: '#A79277' }}
+            ></div>
+            <p className="mt-4" style={{ color: '#A79277' }}>Loading wishlist...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   if (wishlistItems.length === 0) {
     return (
       <>
@@ -79,7 +98,7 @@ const Wishlist = () => {
       <div className="min-h-screen" style={{ backgroundColor: '#FFF2E1' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           
-          <div className="mb-8 flex justify-between items-center">
+          <div className="mb-8 flex justify-between items-center flex-wrap gap-4">
             <div>
               <h1 className="text-3xl font-bold" style={{ color: '#5A4638' }}>My Wishlist</h1>
               <p className="text-lg mt-2" style={{ color: '#8B7355' }}>
@@ -90,7 +109,7 @@ const Wishlist = () => {
             <button
               onClick={clearWishlist}
               disabled={loading}
-              className="px-4 py-2 rounded-lg font-medium transition duration-200 disabled:opacity-50"
+              className="px-4 py-2 rounded-lg font-medium transition duration-200 disabled:opacity-50 hover:opacity-80"
               style={{ 
                 backgroundColor: '#FFEBEE',
                 color: '#EF5350',
@@ -112,80 +131,96 @@ const Wishlist = () => {
             </div>
           )}
 
-          
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {wishlistItems.map((item) => (
-              <div 
-                key={item.id}
-                className="rounded-xl p-4 transition-all duration-300 hover:shadow-lg"
-                style={{ 
-                  backgroundColor: '#FFF9F0',
-                  border: '1px solid #D1BB9E'
-                }}
-              >
-                
-                <div className="relative mb-4">
-                  <div className="w-full h-48 rounded-lg overflow-hidden">
-                    <img 
-                      src={item.image} 
-                      alt={item.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
-                      }}
-                    />
-                  </div>
-                  
-                  
-                  <button
-                    onClick={() => removeFromWishlist(item.id)}
-                    disabled={loading}
-                    className="absolute top-2 right-2 p-2 rounded-full transition duration-200"
-                    style={{ 
-                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                      color: '#EF5350'
-                    }}
-                  >
-                    <DeleteIcon className="w-4 h-4" />
-                  </button>
-                </div>
-
-                
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-lg truncate" style={{ color: '#5A4638' }}>
-                    {item.name}
-                  </h3>
-                  <p className="text-xl font-bold" style={{ color: '#A79277' }}>
-                    ₹{item.price.toFixed(2)}
-                  </p>
-                  
-                  
-                  <div className="flex space-x-2 pt-2">
+            {wishlistItems.map((item) => {
+              // Get the product ID correctly
+              const productId = item._id || item.id;
+              
+              return (
+                <div 
+                  key={productId}
+                  className="rounded-xl p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                  style={{ 
+                    backgroundColor: '#FFF9F0',
+                    border: '1px solid #D1BB9E'
+                  }}
+                >
+                  <div className="relative mb-4">
+                    <div className="w-full h-48 rounded-lg overflow-hidden bg-gray-100">
+                      <img 
+                        src={item.image} 
+                        alt={item.name}
+                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                        onError={(e) => {
+                          e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
+                        }}
+                      />
+                    </div>
+                    
                     <button
-                      onClick={() => handleMoveToCart(item)}
+                      onClick={() => handleRemoveItem(item)}
                       disabled={loading}
-                      className="flex-1 py-2 px-4 rounded-lg font-medium transition duration-200 flex items-center justify-center space-x-2"
+                      className="absolute top-2 right-2 p-2 rounded-full transition duration-200 hover:scale-110"
                       style={{ 
-                        backgroundColor: '#A79277',
-                        color: '#FFF2E1'
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        color: '#EF5350'
                       }}
-                      onMouseOver={(e) => !loading && (e.target.style.backgroundColor = '#8B7355')}
-                      onMouseOut={(e) => !loading && (e.target.style.backgroundColor = '#A79277')}
+                      title="Remove from wishlist"
                     >
-                      <ShoppingBagIcon className="w-4 h-4" />
-                      <span>Add to Cart</span>
+                      <DeleteIcon className="w-4 h-4" />
                     </button>
+
+                    {item.collection && (
+                      <div className="absolute bottom-2 left-2">
+                        <span 
+                          className="px-2 py-1 text-xs font-medium rounded"
+                          style={{ backgroundColor: '#5A4638', color: '#FFF2E1' }}
+                        >
+                          {item.collection.toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-lg truncate" style={{ color: '#5A4638' }}>
+                      {item.name}
+                    </h3>
+                    
+                    <p className="text-xl font-bold" style={{ color: '#A79277' }}>
+                      ₹{(item.price || 0).toFixed(2)}
+                    </p>
+                    
+                    {item.description && (
+                      <p className="text-sm line-clamp-2" style={{ color: '#8B7355' }}>
+                        {item.description}
+                      </p>
+                    )}
+                    
+                    <div className="flex space-x-2 pt-2">
+                      <button
+                        onClick={() => handleMoveToCart(item)}
+                        disabled={loading}
+                        className="flex-1 py-2 px-4 rounded-lg font-medium transition duration-200 flex items-center justify-center space-x-2 hover:opacity-90"
+                        style={{ 
+                          backgroundColor: '#A79277',
+                          color: '#FFF2E1'
+                        }}
+                      >
+                        <ShoppingBagIcon className="w-4 h-4" />
+                        <span>Add to Cart</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
-          
           <div className="mt-12 text-center">
             <Link
               to="/products"
-              className="inline-flex items-center px-6 py-3 rounded-lg font-medium transition duration-200"
+              className="inline-flex items-center px-6 py-3 rounded-lg font-medium transition duration-200 hover:opacity-80"
               style={{ 
                 backgroundColor: 'transparent',
                 color: '#5A4638',

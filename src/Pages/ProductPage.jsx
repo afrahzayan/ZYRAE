@@ -118,9 +118,9 @@ const ProductPage = () => {
 
   const {
     addToWishlist,
-    removeFromWishlistByProductId,
+    removeFromWishlist,
     isInWishlist,
-    loading: wishlistLoading,
+    // REMOVED: loading: wishlistLoading - don't use global loading for individual buttons
   } = useWishlist();
 
   const [addingToCart, setAddingToCart] = useState({});
@@ -138,35 +138,33 @@ const ProductPage = () => {
     fetchProducts();
   }, []);
 
- const fetchProducts = async () => {
-  try {
-    setLoading(true);
-    
-    const response = await api.get('/product');
-    console.log('Products response:', response.data);
-    
-    // FIX: Your backend returns products with 'id' field
-    if (response.data && response.data.products) {
-      // Format products to have both 'id' and '_id'
-      const formattedProducts = response.data.products.map(product => ({
-        ...product,
-        _id: product.id,  // Add _id field for frontend compatibility
-        id: product.id
-      }));
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
       
-      setProducts(formattedProducts);
-    } else {
-      setProducts([]);
+      const response = await api.get('/product');
+      console.log('Products response:', response.data);
+      
+      if (response.data && response.data.products) {
+        const formattedProducts = response.data.products.map(product => ({
+          ...product,
+          _id: product.id,
+          id: product.id
+        }));
+        
+        setProducts(formattedProducts);
+      } else {
+        setProducts([]);
+      }
+      
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching products:', err);
+      setError('Failed to load products. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    
-    setError(null);
-  } catch (err) {
-    console.error('Error fetching products:', err);
-    setError('Failed to load products. Please try again.');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleAddToCart = async (e, product) => {
     e.stopPropagation();
@@ -175,7 +173,6 @@ const ProductPage = () => {
       navigate('/login', {
         state: { message: 'Please login to add items to cart' },
       });
-
       return;
     }
 
@@ -201,7 +198,6 @@ const ProductPage = () => {
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
-
       showToast('An error occurred. Please try again.', 'error');
     } finally {
       setAddingToCart((prev) => ({
@@ -218,7 +214,6 @@ const ProductPage = () => {
       navigate('/login', {
         state: { message: 'Please login to add items to wishlist' },
       });
-
       return;
     }
 
@@ -233,26 +228,30 @@ const ProductPage = () => {
         name: product.name,
         price: parseFloat(product.price) || 0,
         image: product.image,
+        description: product.description || ''
       };
 
-      if (isInWishlist(product._id)) {
-        const success = await removeFromWishlistByProductId(product._id);
-
+      const currentlyInWishlist = isInWishlist(product._id);
+      
+      if (currentlyInWishlist) {
+        const success = await removeFromWishlist(product._id);
+        
         if (success) {
           showToast(`${product.name} removed from wishlist`, 'success');
+        } else {
+          showToast('Failed to remove from wishlist', 'error');
         }
       } else {
         const success = await addToWishlist(productForWishlist);
-
+        
         if (success) {
           showToast(`${product.name} added to wishlist!`, 'success');
         } else {
-          showToast('Product is already in your wishlist', 'info');
+          showToast('Failed to add to wishlist', 'error');
         }
       }
     } catch (error) {
       console.error('Error toggling wishlist:', error);
-
       showToast('Failed to update wishlist. Please try again.', 'error');
     } finally {
       setAddingToWishlist((prev) => ({
@@ -270,7 +269,6 @@ const ProductPage = () => {
     return (
       <>
         <Navbar />
-
         <div
           className="min-h-screen flex items-center justify-center"
           style={{ backgroundColor: '#FFF2E1' }}
@@ -280,7 +278,6 @@ const ProductPage = () => {
               className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2"
               style={{ borderColor: '#A79277' }}
             ></div>
-
             <p
               className="mt-4 font-medium"
               style={{ color: '#A79277' }}
@@ -297,7 +294,6 @@ const ProductPage = () => {
     return (
       <>
         <Navbar />
-
         <div
           className="min-h-screen flex items-center justify-center"
           style={{ backgroundColor: '#FFF2E1' }}
@@ -315,7 +311,6 @@ const ProductPage = () => {
             >
               {error}
             </p>
-
             <button
               onClick={fetchProducts}
               className="px-4 py-2 font-medium rounded-lg hover:opacity-90 transition duration-300"
@@ -360,7 +355,6 @@ const ProductPage = () => {
           >
             Our Products
           </h1>
-
           <p
             className="text-lg"
             style={{ color: '#A79277' }}
@@ -387,7 +381,6 @@ const ProductPage = () => {
             >
               No products found in the database.
             </p>
-
             <button
               onClick={fetchProducts}
               className="px-4 py-2 font-medium rounded-lg hover:opacity-90 transition duration-300"
@@ -422,14 +415,10 @@ const ProductPage = () => {
                     }}
                   />
 
+                  {/* FIXED: Removed wishlistLoading from disabled */}
                   <button
-                    onClick={(e) =>
-                      handleWishlistClick(e, product)
-                    }
-                    disabled={
-                      addingToWishlist[product._id] ||
-                      wishlistLoading
-                    }
+                    onClick={(e) => handleWishlistClick(e, product)}
+                    disabled={addingToWishlist[product._id]}
                     className="absolute top-2 right-2 rounded-full p-2 shadow-lg hover:bg-opacity-90 transition-all opacity-0 group-hover/card:opacity-100 disabled:opacity-50"
                     style={{ backgroundColor: '#EAD8C0' }}
                   >
@@ -447,9 +436,7 @@ const ProductPage = () => {
                   </button>
 
                   <button
-                    onClick={(e) =>
-                      handleAddToCart(e, product)
-                    }
+                    onClick={(e) => handleAddToCart(e, product)}
                     disabled={addingToCart[product._id]}
                     className="absolute bottom-2 right-2 px-3 py-1 rounded-full text-sm font-medium opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 hover:opacity-90 disabled:opacity-50 flex items-center"
                     style={{
@@ -458,10 +445,7 @@ const ProductPage = () => {
                     }}
                   >
                     <ShoppingBagIcon className="w-4 h-4 mr-1" />
-
-                    {addingToCart[product._id]
-                      ? 'Adding...'
-                      : 'Add to Cart'}
+                    {addingToCart[product._id] ? 'Adding...' : 'Add to Cart'}
                   </button>
 
                   {product.collection && (
@@ -486,7 +470,6 @@ const ProductPage = () => {
                   >
                     {product.name || 'Unnamed Product'}
                   </h3>
-
                   <p
                     className="font-bold text-xl mb-2"
                     style={{ color: '#A79277' }}
@@ -496,7 +479,6 @@ const ProductPage = () => {
                       ? product.price.toFixed(2)
                       : product.price || '0.00'}
                   </p>
-
                   {product.description && (
                     <p
                       className="text-sm mb-2 truncate"
@@ -526,12 +508,10 @@ const ProductPage = () => {
               >
                 Need Help?
               </h3>
-
               <p style={{ color: '#8B7355' }}>
                 Contact us for any questions about our products
               </p>
             </div>
-
             <button
               className="px-6 py-3 font-medium rounded-lg transition duration-300 hover:opacity-90"
               style={{

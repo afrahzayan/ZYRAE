@@ -1,5 +1,6 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import { api } from '../API/Axios';
+import { useAuth } from './AuthContext';
 
 const WishlistContext = createContext();
 
@@ -15,103 +16,109 @@ export const WishlistProvider = ({ children }) => {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { user } = useAuth();
 
+  // Fetch wishlist when user logs in/out
   useEffect(() => {
-    fetchWishlistItems();
-  }, []);
+    if (user) {
+      fetchWishlistItems();
+    } else {
+      setWishlistItems([]); // Clear wishlist when user logs out
+    }
+  }, [user]);
 
   const fetchWishlistItems = async () => {
+    if (!user) return;
+    
     setLoading(true);
     try {
       const response = await api.get('/wishlist');
-      setWishlistItems(response.data || []);
+      // Your backend returns { success, message, data }
+      if (response.data.success) {
+        setWishlistItems(response.data.data || []);
+      } else {
+        setWishlistItems([]);
+      }
+      setError('');
     } catch (error) {
       console.error('Error fetching wishlist items:', error);
-      setError('Failed to load wishlist items');
+      setError(error.response?.data?.message || 'Failed to load wishlist items');
+      setWishlistItems([]);
     } finally {
       setLoading(false);
     }
   };
 
   const addToWishlist = async (product) => {
+    if (!user) {
+      setError('Please login to add items to wishlist');
+      return false;
+    }
+    
     setLoading(true);
     setError('');
     try {
-      const existingItem = wishlistItems.find(item => item.productId === product._id);
+      const productId = product.id || product._id;
       
-      if (existingItem) {
-        setError('Item already in wishlist');
-        setLoading(false);
-        return false;
+      // Your backend expects POST to /wishlist/add/:id
+      const response = await api.post(`/wishlist/add/${productId}`);
+      
+      if (response.data.success) {
+        // Fetch updated wishlist to get complete product details
+        await fetchWishlistItems();
+        return true;
       }
-
-      const newWishlistItem = {
-        id: Date.now().toString(),
-        productId: product._id,
-        name: product.name,
-        price: parseFloat(product.price),
-        image: product.image,
-        addedAt: new Date().toISOString()
-      };
-      
-      await api.post('/wishlist', newWishlistItem);
-      setWishlistItems(prev => [...prev, newWishlistItem]);
-      
-      return true;
+      return false;
     } catch (error) {
       console.error('Error adding to wishlist:', error);
-      setError('Failed to add item to wishlist');
+      setError(error.response?.data?.message || 'Failed to add item to wishlist');
       return false;
     } finally {
       setLoading(false);
     }
   };
 
-  const removeFromWishlist = async (wishlistItemId) => {
+  const removeFromWishlist = async (productId) => {
     setLoading(true);
     try {
-      await api.delete(`/wishlist/${wishlistItemId}`);
-      setWishlistItems(prev => prev.filter(item => item.id !== wishlistItemId));
-      return true;
-    } catch (error) {
-      console.error('Error removing from wishlist:', error);
-      setError('Failed to remove item from wishlist');
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const removeFromWishlistByProductId = async (productId) => {
-    setLoading(true);
-    try {
-      const wishlistItem = wishlistItems.find(item => item.productId === productId);
-      if (wishlistItem) {
-        await api.delete(`/wishlist/${wishlistItem.id}`);
-        setWishlistItems(prev => prev.filter(item => item.productId !== productId));
+      // Your backend expects DELETE to /wishlist/remove/:id
+      const response = await api.delete(`/wishlist/remove/${productId}`);
+      
+      if (response.data.success) {
+        // Remove from local state
+        setWishlistItems(prev => prev.filter(item => item._id !== productId));
         return true;
       }
       return false;
     } catch (error) {
       console.error('Error removing from wishlist:', error);
-      setError('Failed to remove item from wishlist');
+      setError(error.response?.data?.message || 'Failed to remove item from wishlist');
       return false;
     } finally {
       setLoading(false);
     }
   };
 
+  // This function is not needed for your backend structure, but kept for compatibility
+  const removeFromWishlistByProductId = async (productId) => {
+    return removeFromWishlist(productId);
+  };
+
   const moveToCart = async (wishlistItem, cartContext) => {
     try {
+      // Add to cart
       const success = await cartContext.addToCart({
-        id: wishlistItem.productId,
+        id: wishlistItem._id,
+        _id: wishlistItem._id,
         name: wishlistItem.name,
         price: wishlistItem.price,
-        image: wishlistItem.image
+        image: wishlistItem.image,
+        description: wishlistItem.description
       });
       
       if (success) {
-        await removeFromWishlist(wishlistItem.id);
+        // Remove from wishlist
+        await removeFromWishlist(wishlistItem._id);
         return true;
       }
       return false;
@@ -122,20 +129,25 @@ export const WishlistProvider = ({ children }) => {
   };
 
   const isInWishlist = (productId) => {
-    return wishlistItems.some(item => item.productId === productId);
+    return wishlistItems.some(item => item._id === productId);
   };
 
   const clearWishlist = async () => {
+    if (!user) return false;
+    
     setLoading(true);
     try {
-      for (const item of wishlistItems) {
-        await api.delete(`/wishlist/${item.id}`);
+      // Your backend expects DELETE to /wishlist/clear
+      const response = await api.delete('/wishlist/clear');
+      
+      if (response.data.success) {
+        setWishlistItems([]);
+        return true;
       }
-      setWishlistItems([]);
-      return true;
+      return false;
     } catch (error) {
       console.error('Error clearing wishlist:', error);
-      setError('Failed to clear wishlist');
+      setError(error.response?.data?.message || 'Failed to clear wishlist');
       return false;
     } finally {
       setLoading(false);

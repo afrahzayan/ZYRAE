@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api } from '../API/Axios';
@@ -6,7 +5,6 @@ import Navbar from '../Component/Navbar';
 import { useCart } from '../Context/CartContext';
 import { useWishlist } from '../Context/WishlistContext';
 import { useAuth } from '../Context/AuthContext';
-
 
 const HeartIconOutline = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -26,22 +24,48 @@ const ShoppingBagIcon = ({ className }) => (
   </svg>
 );
 
+const ToastNotification = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const bgColor = type === 'success' ? '#10B981' : '#EF4444';
+
+  return (
+    <div className="fixed top-20 right-4 z-50 animate-slideIn">
+      <div
+        className="flex items-center p-4 rounded-lg shadow-lg text-white"
+        style={{ backgroundColor: bgColor }}
+      >
+        <span>{message}</span>
+        <button onClick={onClose} className="ml-4">✕</button>
+      </div>
+    </div>
+  );
+};
+
 const Collections = () => {
   const { collectionName } = useParams();
   const navigate = useNavigate();
-  
+
   const { user } = useAuth();
   const { addToCart } = useCart();
-  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
-  
+  const { addToWishlist, removeFromWishlist, isInWishlist, fetchWishlistItems } = useWishlist();
+
+  const [toast, setToast] = useState({
+    show: false,
+    message: '',
+    type: 'success',
+  });
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   const [addingToCart, setAddingToCart] = useState({});
   const [addingToWishlist, setAddingToWishlist] = useState({});
 
-  
   const collectionDisplayNames = {
     floral: 'Floral Perfumes',
     woody: 'Woody Scents',
@@ -49,7 +73,6 @@ const Collections = () => {
     oriental: 'Oriental Blends'
   };
 
-  
   const collectionDescriptions = {
     floral: 'Delicate and romantic scents inspired by nature\'s most beautiful flowers. Perfect for everyday elegance.',
     woody: 'Warm and earthy fragrances with notes of sandalwood, cedar, and vetiver. Ideal for sophisticated evenings.',
@@ -57,126 +80,131 @@ const Collections = () => {
     oriental: 'Exotic and sensual blends with spices, amber, and musk. Perfect for special occasions.'
   };
 
-  
   useEffect(() => {
     fetchProductsByCollection();
   }, [collectionName]);
 
+  // FIXED: Fetch products filtered by collection from backend
   const fetchProductsByCollection = async () => {
-  try {
-    setLoading(true);
-    setError(null);
-    
-    const response = await api.get('/product');
-    console.log('All products:', response.data);
-    
-    const allProducts = response.data.products || [];
-    
-    // Format products to have both 'id' and '_id'
-    const formattedProducts = allProducts.map(product => ({
-      ...product,
-      _id: product.id,
-      id: product.id
-    }));
-    
-    // Filter by collection
-    const filteredProducts = formattedProducts.filter(product => 
-      product.collection && product.collection.toLowerCase() === collectionName.toLowerCase()
-    );
-    
-    setProducts(filteredProducts);
-    
-    if (filteredProducts.length === 0) {
-      console.log('No products found for collection:', collectionName);
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Send collection as query parameter to backend
+      const response = await api.get(`/product?collection=${collectionName}`);
+      console.log('Filtered products response:', response.data);
+
+      if (response.data && response.data.products) {
+        // Format products to have both 'id' and '_id'
+        const formattedProducts = response.data.products.map(product => ({
+          ...product,
+          _id: product.id,
+          id: product.id
+        }));
+        
+        setProducts(formattedProducts);
+      } else {
+        setProducts([]);
+      }
+
+    } catch (err) {
+      console.error('Error fetching products by collection:', err);
+      setError('Failed to load collection products. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    
-  } catch (err) {
-    console.error('Error fetching products:', err);
-    setError('Failed to load collection products. Please try again.');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
-
+  const showToast = (message, type = 'success') => {
+    setToast({
+      show: true,
+      message,
+      type,
+    });
+  };
 
   const handleAddToCart = async (e, product) => {
     e.stopPropagation();
-    
+
     if (!user) {
       navigate('/login', { state: { message: 'Please login to add items to cart' } });
       return;
     }
 
     setAddingToCart(prev => ({ ...prev, [product._id]: true }));
-    
+
     try {
       const productForCart = {
         id: product._id,
         name: product.name,
         price: parseFloat(product.price) || 0,
-        image: product.image
+        image: product.image,
+        description: product.description
       };
-      
-      await addToCart(productForCart);
-      
+
+      const success = await addToCart(productForCart);
+      if (success) {
+        showToast(`${product.name} added to cart successfully!`, 'success');
+      }
     } catch (error) {
       console.error('Error adding to cart:', error);
+      showToast('Failed to add to cart', 'error');
     } finally {
       setAddingToCart(prev => ({ ...prev, [product._id]: false }));
     }
   };
 
-
+  // FIXED: Simplified wishlist toggle
   const handleWishlistClick = async (e, product) => {
     e.stopPropagation();
-    
+
     if (!user) {
       navigate('/login', { state: { message: 'Please login to add items to wishlist' } });
       return;
     }
 
     setAddingToWishlist(prev => ({ ...prev, [product._id]: true }));
-    
+
     try {
+      const productForWishlist = {
+        id: product._id,
+        name: product.name,
+        price: parseFloat(product.price) || 0,
+        image: product.image,
+        description: product.description || ''
+      };
+
       if (isInWishlist(product._id)) {
-        
-        const wishlistResponse = await api.get('/wishlist');
-        const wishlistItem = wishlistResponse.data.find(item => item.productId === product._id);
-        if (wishlistItem) {
-          await removeFromWishlist(wishlistItem.id);
+        const success = await removeFromWishlist(product._id);
+        if (success) {
+          showToast(`${product.name} removed from wishlist`, 'success');
         }
       } else {
-        
-        const productForWishlist = {
-          id: product._id,
-          name: product.name,
-          price: parseFloat(product.price) || 0,
-          image: product.image
-        };
-        await addToWishlist(productForWishlist);
+        const success = await addToWishlist(productForWishlist);
+        if (success) {
+          showToast(`${product.name} added to wishlist!`, 'success');
+        }
       }
     } catch (error) {
       console.error('Error toggling wishlist:', error);
+      showToast('Failed to update wishlist', 'error');
     } finally {
       setAddingToWishlist(prev => ({ ...prev, [product._id]: false }));
     }
   };
 
-  
   const handleProductClick = (productId) => {
     navigate(`/product/${productId}`);
   };
 
-  
   if (loading) {
     return (
       <>
         <Navbar />
         <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFF2E1' }}>
           <div className="text-center">
-            <div 
-              className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2" 
+            <div
+              className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2"
               style={{ borderColor: '#A79277' }}
             ></div>
             <p className="mt-4 font-medium" style={{ color: '#A79277' }}>Loading collection...</p>
@@ -186,7 +214,6 @@ const Collections = () => {
     );
   }
 
-  
   if (error || !collectionName) {
     return (
       <>
@@ -196,7 +223,7 @@ const Collections = () => {
             <p className="mb-4 font-medium" style={{ color: '#5A4638' }}>
               {error || 'Collection not found'}
             </p>
-            <button 
+            <button
               onClick={() => navigate('/products')}
               className="px-4 py-2 font-medium rounded-lg hover:opacity-90 transition duration-300"
               style={{ backgroundColor: '#A79277', color: '#FFF2E1' }}
@@ -211,10 +238,18 @@ const Collections = () => {
 
   return (
     <>
+      {toast.show && (
+        <ToastNotification
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast((prev) => ({ ...prev, show: false }))}
+        />
+      )}
+
       <Navbar />
       <div className="min-h-screen" style={{ backgroundColor: '#FFF2E1' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          
+          {/* Breadcrumb */}
           <div className="mb-6">
             <nav className="flex" aria-label="Breadcrumb">
               <ol className="flex items-center space-x-2">
@@ -241,7 +276,7 @@ const Collections = () => {
             </nav>
           </div>
 
-        
+          {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold mb-4" style={{ color: '#5A4638' }}>
               {collectionDisplayNames[collectionName] || collectionName}
@@ -254,13 +289,13 @@ const Collections = () => {
             </p>
           </div>
 
-          
+          {/* Products Grid */}
           {products.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-lg mb-4 font-medium" style={{ color: '#A79277' }}>
                 No products found in this collection.
               </p>
-              <button 
+              <button
                 onClick={() => navigate('/products')}
                 className="px-4 py-2 font-medium rounded-lg hover:opacity-90 transition duration-300"
                 style={{ backgroundColor: '#A79277', color: '#FFF2E1' }}
@@ -271,25 +306,23 @@ const Collections = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((product) => (
-                <div 
+                <div
                   key={product._id}
                   className="rounded-xl shadow-md hover:shadow-xl transition-all duration-300 group/card cursor-pointer overflow-hidden transform hover:-translate-y-1 border"
                   style={{ backgroundColor: '#FFF2E1', borderColor: '#EAD8C0' }}
                   onClick={() => handleProductClick(product._id)}
                 >
-                  
                   <div className="relative overflow-hidden rounded-t-xl bg-gray-50">
-                    <img 
-                      src={`http://localhost:5173/${product?.image}`} 
+                    <img
+                      src={product.image}
                       alt={product.name || "Product"}
                       className="w-full h-64 object-cover transition-transform duration-500 ease-in-out group-hover/card:scale-110"
                       onError={(e) => {
                         e.target.src = "https://via.placeholder.com/300x300?text=Image+Not+Found";
                       }}
                     />
-                    
-                    
-                    <button 
+
+                    <button
                       onClick={(e) => handleWishlistClick(e, product)}
                       disabled={addingToWishlist[product._id]}
                       className="absolute top-2 right-2 rounded-full p-2 shadow-lg hover:bg-opacity-90 transition-all opacity-0 group-hover/card:opacity-100 disabled:opacity-50"
@@ -302,8 +335,7 @@ const Collections = () => {
                       )}
                     </button>
 
-                    
-                    <button 
+                    <button
                       onClick={(e) => handleAddToCart(e, product)}
                       disabled={addingToCart[product._id]}
                       className="absolute bottom-2 right-2 px-3 py-1 rounded-full text-sm font-medium opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 hover:opacity-90 disabled:opacity-50 flex items-center"
@@ -314,19 +346,21 @@ const Collections = () => {
                     </button>
                   </div>
 
-                
                   <div className="p-4">
-                  
                     <h3 className="font-semibold text-lg mb-2 truncate" style={{ color: '#5A4638' }}>
                       {product.name || "Unnamed Product"}
                     </h3>
-                    
-                
+
                     <p className="font-bold text-xl mb-2" style={{ color: '#A79277' }}>
                       ₹{typeof product.price === 'number' ? product.price.toFixed(2) : (product.price || "0.00")}
                     </p>
 
-                    
+                    {product.description && (
+                      <p className="text-sm mb-2 line-clamp-2" style={{ color: '#8B7355' }}>
+                        {product.description}
+                      </p>
+                    )}
+
                     <div className="mt-2">
                       <span className="inline-block text-xs px-2 py-1 rounded" style={{ backgroundColor: '#EAD8C0', color: '#5A4638' }}>
                         {collectionDisplayNames[product.collection] || product.collection}
@@ -338,14 +372,14 @@ const Collections = () => {
             </div>
           )}
 
-          
+          {/* Info Section */}
           <div className="mt-12 p-6 rounded-xl" style={{ backgroundColor: '#FFF9F0', border: '1px solid #D1BB9E' }}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
                 <h3 className="font-bold text-lg mb-4" style={{ color: '#5A4638' }}>About This Collection</h3>
                 <p style={{ color: '#8B7355' }}>
-                  Each fragrance in our {collectionDisplayNames[collectionName]} collection is carefully crafted 
-                  using premium ingredients to create a unique olfactory experience. Our perfumes are 
+                  Each fragrance in our {collectionDisplayNames[collectionName]} collection is carefully crafted
+                  using premium ingredients to create a unique olfactory experience. Our perfumes are
                   designed to evoke emotions and memories through their distinctive scent profiles.
                 </p>
               </div>
@@ -385,12 +419,12 @@ const Collections = () => {
             </div>
           </div>
 
-          
+          {/* Back Link */}
           <div className="mt-8 text-center">
             <Link
               to="/products"
               className="inline-flex items-center px-6 py-3 rounded-lg font-medium transition duration-200"
-              style={{ 
+              style={{
                 backgroundColor: 'transparent',
                 color: '#5A4638',
                 border: '2px solid #A79277'
