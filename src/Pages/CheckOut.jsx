@@ -22,7 +22,7 @@ const Checkout = () => {
     city: '',
     state: '',
     zipCode: '',
-    paymentMethod: 'card' 
+    paymentMethod: 'online' // Changed default to 'online'
   });
 
   // Shipping cost
@@ -45,53 +45,61 @@ const Checkout = () => {
 
   // Handle place order
   const handlePlaceOrder = async () => {
-    // Validate form data
-    if (!formData.fullName || !formData.email || !formData.phone || !formData.address || !formData.city) {
-      alert('Please fill all required fields');
+    if (
+      !formData.fullName ||
+      !formData.email ||
+      !formData.phone ||
+      !formData.address ||
+      !formData.city
+    ) {
+      alert("Please fill all required fields");
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
-      // Create order object
       const orderData = {
-        id: Date.now().toString(),
-        orderNumber: `ORD${Date.now().toString().slice(-6)}`,
-        userId: user.id,
         userName: formData.fullName,
         userEmail: formData.email,
         userPhone: formData.phone,
-        items: cartItems.map(item => ({
+        items: cartItems.map((item) => ({
           productId: item.id || item.productId,
           name: item.name,
-          price: parseFloat(item.price) || 0,
+          price: parseFloat(item.price),
           image: item.image,
           quantity: item.quantity,
-          size: item.size || '50ml'
+          size: item.size || "50ml"
         })),
         shippingAddress: formData.address,
         shippingCity: formData.city,
         shippingState: formData.state,
         shippingZip: formData.zipCode,
         totalAmount: parseFloat(calculateTotal()),
-        paymentMethod: formData.paymentMethod,
-        status: 'processing',
-        orderDate: new Date().toISOString()
+        paymentMethod: formData.paymentMethod
       };
 
-      // Save order to database
-      await api.post('/orders', orderData);
-      
-      // Clear cart after successful order
-      await clearCart();
-      
-      // Show success message
-      setOrderPlaced(true);
-      
+      // For Cash on Delivery
+      if (formData.paymentMethod === 'cod') {
+        const response = await api.post("/orders/create-cod-order", orderData);
+        
+        if (response.data.success) {
+          await clearCart();
+          setOrderPlaced(true);
+        } else {
+          alert("Failed to place order");
+        }
+      } 
+      // For Online Payment (Stripe)
+      else {
+        const response = await api.post("/orders/create-checkout-session", orderData);
+        // Redirect to stripe checkout page
+        window.location.href = response.data.url;
+      }
+
     } catch (error) {
-      console.error('Error placing order:', error);
-      alert('Failed to place order. Please try again.');
+      console.log(error);
+      alert("Payment failed");
     } finally {
       setLoading(false);
     }
@@ -125,7 +133,7 @@ const Checkout = () => {
     );
   }
 
-  // Order placed success view
+  // Order placed success view (for COD)
   if (orderPlaced) {
     return (
       <>
@@ -143,7 +151,7 @@ const Checkout = () => {
               </div>
               <h1 className="text-2xl font-bold mb-4" style={{ color: '#5A4638' }}>Order Confirmed!</h1>
               <p className="mb-6" style={{ color: '#8B7355' }}>
-                Thank you for your order. We've sent a confirmation to {user?.email}
+                Thank you for your order. You will pay when your order is delivered.
               </p>
               <div className="space-y-3">
                 <button
@@ -369,39 +377,61 @@ const Checkout = () => {
                 <h2 className="text-xl font-bold mb-6" style={{ color: '#5A4638' }}>Payment Method</h2>
                 
                 <div className="space-y-3">
-                  {[
-                    { id: 'card', name: 'Credit/Debit Card', desc: 'Pay with your card' },
-                    { id: 'upi', name: 'UPI', desc: 'Pay via UPI apps' },
-                    { id: 'cod', name: 'Cash on Delivery', desc: 'Pay when item is delivered' }
-                  ].map((method) => (
-                    <div
-                      key={method.id}
-                      className={`flex items-center p-4 rounded-lg cursor-pointer transition duration-200 ${
-                        formData.paymentMethod === method.id 
-                          ? 'border-2' 
-                          : 'border'
-                      }`}
-                      style={{
-                        backgroundColor: '#FFF2E1',
-                        borderColor: formData.paymentMethod === method.id ? '#A79277' : '#D1BB9E'
-                      }}
-                      onClick={() => setFormData(prev => ({ ...prev, paymentMethod: method.id }))}
-                    >
-                      <div className={`w-5 h-5 rounded-full border-2 mr-4 flex items-center justify-center ${
-                        formData.paymentMethod === method.id 
-                          ? 'border-[#A79277]' 
-                          : 'border-[#D1BB9E]'
-                      }`}>
-                        {formData.paymentMethod === method.id && (
-                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#A79277' }}></div>
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium" style={{ color: '#5A4638' }}>{method.name}</p>
-                        <p className="text-sm" style={{ color: '#8B7355' }}>{method.desc}</p>
-                      </div>
+                  {/* Online Payment Option */}
+                  <div
+                    className={`flex items-center p-4 rounded-lg cursor-pointer transition duration-200 ${
+                      formData.paymentMethod === 'online' 
+                        ? 'border-2' 
+                        : 'border'
+                    }`}
+                    style={{
+                      backgroundColor: '#FFF2E1',
+                      borderColor: formData.paymentMethod === 'online' ? '#A79277' : '#D1BB9E'
+                    }}
+                    onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'online' }))}
+                  >
+                    <div className={`w-5 h-5 rounded-full border-2 mr-4 flex items-center justify-center ${
+                      formData.paymentMethod === 'online' 
+                        ? 'border-[#A79277]' 
+                        : 'border-[#D1BB9E]'
+                    }`}>
+                      {formData.paymentMethod === 'online' && (
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#A79277' }}></div>
+                      )}
                     </div>
-                  ))}
+                    <div>
+                      <p className="font-medium" style={{ color: '#5A4638' }}>Online Payment</p>
+                      <p className="text-sm" style={{ color: '#8B7355' }}>Pay with Credit/Debit Card, UPI, NetBanking</p>
+                    </div>
+                  </div>
+
+                  {/* Cash on Delivery Option */}
+                  <div
+                    className={`flex items-center p-4 rounded-lg cursor-pointer transition duration-200 ${
+                      formData.paymentMethod === 'cod' 
+                        ? 'border-2' 
+                        : 'border'
+                    }`}
+                    style={{
+                      backgroundColor: '#FFF2E1',
+                      borderColor: formData.paymentMethod === 'cod' ? '#A79277' : '#D1BB9E'
+                    }}
+                    onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'cod' }))}
+                  >
+                    <div className={`w-5 h-5 rounded-full border-2 mr-4 flex items-center justify-center ${
+                      formData.paymentMethod === 'cod' 
+                        ? 'border-[#A79277]' 
+                        : 'border-[#D1BB9E]'
+                    }`}>
+                      {formData.paymentMethod === 'cod' && (
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#A79277' }}></div>
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-medium" style={{ color: '#5A4638' }}>Cash on Delivery</p>
+                      <p className="text-sm" style={{ color: '#8B7355' }}>Pay when your order is delivered</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -481,7 +511,9 @@ const Checkout = () => {
                       Processing...
                     </div>
                   ) : (
-                    `Place Order - ₹${calculateTotal()}`
+                    formData.paymentMethod === 'cod' 
+                      ? `Place Order (Cash on Delivery) - ₹${calculateTotal()}`
+                      : `Pay Online - ₹${calculateTotal()}`
                   )}
                 </button>
 

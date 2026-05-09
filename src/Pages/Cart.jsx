@@ -47,11 +47,15 @@ const Cart = () => {
 
   const [isClearing, setIsClearing] = useState(false);
 
-  const handleQuantityChange = (itemId, change) => {
-  const item = cartItems.find(item => item._id === itemId);    if (item) {
-      updateQuantity(itemId, item.quantity + change);
+const handleQuantityChange = (itemId, change) => {
+  const item = cartItems.find(item => item._id === itemId);
+  if (item) {
+    const newQuantity = item.quantity + change;
+    if (newQuantity >= 1) {
+      updateQuantity(itemId, newQuantity);
     }
-  };
+  }
+};
 
   const handleClearCart = async () => {
     setIsClearing(true);

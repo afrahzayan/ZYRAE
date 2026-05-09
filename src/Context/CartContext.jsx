@@ -72,26 +72,46 @@ const addToCart = async (product) => {
   setError("");
 
   try {
-    console.log("FULL PRODUCT:", product);
-
-    // FIX: Handle both _id and id fields
     const productId = product._id || product.id;
     
-    const newCartItem = {
-      productId: productId,  // Make sure productId is set correctly
-      name: product.name,
-      price: parseFloat(product.price),
-      image: product.image,
-      quantity: product.quantity || 1,
-      size: product.size || "50ml",
-    };
+    // CHECK IF PRODUCT ALREADY EXISTS IN CART
+    const existingItem = cartItems.find(
+      item => item.productId === productId || item._id === productId
+    );
 
-    console.log("SENDING CART ITEM:", newCartItem);
+    let response;
+    
+    if (existingItem) {
+      // UPDATE EXISTING ITEM QUANTITY
+      const newQuantity = existingItem.quantity + (product.quantity || 1);
+      response = await api.put(`/cart/${existingItem._id}`, {
+        ...existingItem,
+        quantity: newQuantity
+      });
+      
+      // Update local state
+      setCartItems(prev =>
+        prev.map(item =>
+          item._id === existingItem._id
+            ? { ...item, quantity: newQuantity }
+            : item
+        )
+      );
+    } else {
+      // ADD NEW ITEM
+      const newCartItem = {
+        productId: productId,
+        name: product.name,
+        price: parseFloat(product.price),
+        image: product.image,
+        quantity: product.quantity || 1,
+        size: product.size || "50ml",
+      };
 
-    const response = await api.post("/cart", newCartItem);
-    console.log("CART RESPONSE:", response.data);
-
-    setCartItems(prev => [...prev, response.data]);
+      response = await api.post("/cart", newCartItem);
+      setCartItems(prev => [...prev, response.data]);
+    }
+    
     return true;
 
   } catch (error) {
@@ -136,52 +156,40 @@ const addToCart = async (product) => {
 
 
 
-  const updateQuantity = async (cartItemId, newQuantity) => {
+ const updateQuantity = async (cartItemId, newQuantity) => {
+  if (newQuantity < 1) {
+    return removeFromCart(cartItemId);
+  }
 
-    if (newQuantity < 1) {
-      return removeFromCart(cartItemId);
-    }
+  setLoading(true);
 
-    setLoading(true);
+  try {
+    // Update local state immediately for better UX
+    const updatedCart = cartItems.map(item => {
+      if (item._id === cartItemId) {
+        return { ...item, quantity: newQuantity };
+      }
+      return item;
+    });
+    
+    setCartItems(updatedCart);
 
-    try {
+    // Then update backend
+    const itemToUpdate = updatedCart.find(item => item._id === cartItemId);
+    await api.put(`/cart/${cartItemId}`, itemToUpdate);
 
-      const updatedCart = cartItems.map(item => {
+    return true;
 
-        if (item._id === cartItemId) {
-          return {
-            ...item,
-            quantity: newQuantity
-          };
-        }
-
-        return item;
-      });
-
-      const itemToUpdate = updatedCart.find(
-        item => item._id === cartItemId
-      );
-
-      await api.put(`/cart/${cartItemId}`, itemToUpdate);
-
-      setCartItems(updatedCart);
-
-      return true;
-
-    } catch (error) {
-
-      console.error("Error updating quantity:", error);
-
-      setError("Failed to update quantity");
-
-      return false;
-
-    } finally {
-
-      setLoading(false);
-
-    }
-  };
+  } catch (error) {
+    console.error("Error updating quantity:", error);
+    setError("Failed to update quantity");
+    // Revert on error
+    await fetchCartItems();
+    return false;
+  } finally {
+    setLoading(false);
+  }
+};
 
 
 
@@ -196,7 +204,7 @@ const clearCart = async () => {
     setError("");
 
     try {
-        // Option 1: Delete all items one by one (current approach)
+        //  Delete all items one by one (current approach)
         const deletePromises = cartItems.map(item => 
             api.delete(`/cart/${item._id}`).catch(err => {
                 console.error(`Failed to delete item ${item._id}:`, err);
@@ -208,7 +216,7 @@ const clearCart = async () => {
         
         // Clear local state
         setCartItems([]);
-        
+         console.log("Cart cleared successfully");
         return true;
 
     } catch (error) {

@@ -20,6 +20,9 @@ import AdminHome from './Admin/Pages/AdminHome'
 import AdminRoute from './Admin/Component/AdminRoute'
 import AddProduct from './Admin/Pages/AddProduct'
 import OTPVerification from './Authentication/otpVerification'
+import PaymentSuccess from './Pages/paymentSuccess'
+import PaymentCancel from './Pages/paymentCancel'
+
 
 function App() {
   return (
@@ -40,6 +43,8 @@ function App() {
       <Route path='/philosophy' element={<Philosophy />} />
       <Route path='/orders' element={<OrdersPage />} />
       <Route path="/OTP-verification" element={<OTPVerification />} />
+      <Route path="/payment-success" element={<PaymentSuccess />} />
+      <Route path="/payment-cancel" element={<PaymentCancel />} />
 
     
       <Route path='/admin/home' element={

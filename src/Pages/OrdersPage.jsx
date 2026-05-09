@@ -10,22 +10,31 @@ const OrdersPage = () => {
   const [loading, setLoading] = useState(true);
   const [hasFetched, setHasFetched] = useState(false);
 
-  const fetchOrders = useCallback(async () => {
-    if (!user || hasFetched) return;
-    
-    setLoading(true);
-    try {
-      const response = await api.get('/orders');
-      // Filter orders by current user
-      const userOrders = response.data.filter(order => order.userId === user.id);
-      setOrders(userOrders);
-      setHasFetched(true);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [user, hasFetched]);
+ const fetchOrders = useCallback(async () => {
+
+  if (!user || hasFetched) return
+
+  setLoading(true)
+
+  try {
+
+    const response = await api.get('/orders')
+
+    setOrders(response.data.data)
+
+    setHasFetched(true)
+
+  } catch (error) {
+
+    console.error('Error fetching orders:', error)
+
+  } finally {
+
+    setLoading(false)
+
+  }
+
+}, [user, hasFetched])
 
   useEffect(() => {
     fetchOrders();
@@ -85,15 +94,14 @@ const OrdersPage = () => {
           ) : (
             <div className="space-y-6">
               {orders.map((order) => (
-                <div key={order.id} className="rounded-xl p-6" style={{ backgroundColor: '#FFF9F0', border: '1px solid #D1BB9E' }}>
+                <div key={order._id} className="rounded-xl p-6" style={{ backgroundColor: '#FFF9F0', border: '1px solid #D1BB9E' }}>
                   
                   {/* Order Header */}
                   <div className="flex justify-between items-start mb-6">
                     <div>
                       <h3 className="text-xl font-bold mb-1" style={{ color: '#5A4638' }}>Order #{order.orderNumber}</h3>
                       <p className="text-sm" style={{ color: '#8B7355' }}>
-                        {new Date(order.orderDate).toLocaleDateString()}
-                      </p>
+                         {new Date(order.createdAt).toLocaleDateString()}                      </p>
                       <p className="text-sm" style={{ color: '#8B7355' }}>
                         Status: <span className="font-medium capitalize" style={{ color: order.status === 'processing' ? '#F59E0B' : order.status === 'delivered' ? '#10B981' : '#A79277' }}>
                           {order.status}
