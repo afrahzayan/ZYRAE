@@ -3,47 +3,76 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "../Context/CartContext";
 
 const PaymentSuccess = () => {
+
   const navigate = useNavigate();
+
   const { clearCart, fetchCartItems } = useCart();
+
   const [isClearing, setIsClearing] = useState(true);
 
   useEffect(() => {
+
+    let mounted = true;
+
     const clearCartAndRedirect = async () => {
+
       try {
-        // Clear the cart
-        const success = await clearCart();
-        
-        if (success) {
-          console.log("Cart cleared successfully");
-          // Verify cart is empty
-          await fetchCartItems();
-        } else {
-          console.log("Failed to clear cart");
-        }
+
+        // CLEAR CART
+        await clearCart();
+
+        // REFRESH CART STATE
+        await fetchCartItems();
+
+        console.log("Cart cleared successfully");
+
       } catch (error) {
+
         console.error("Error clearing cart:", error);
+
       } finally {
-        setIsClearing(false);
-        // Redirect after 2 seconds
-        setTimeout(() => {
-          navigate("/orders");
-        }, 2000);
+
+        if (mounted) {
+
+          setIsClearing(false);
+
+          // REDIRECT AFTER 2 SECONDS
+          setTimeout(() => {
+
+            navigate("/orders", { replace: true });
+
+          }, 2000);
+        }
       }
     };
 
     clearCartAndRedirect();
-  }, [clearCart, fetchCartItems, navigate]);
+
+    return () => {
+
+      mounted = false;
+
+    };
+
+  }, []); // IMPORTANT: EMPTY DEPENDENCY ARRAY
 
   return (
     <div className="min-h-screen flex items-center justify-center">
+
       <div className="text-center">
+
         <h1 className="text-3xl font-bold text-green-600 mb-4">
           Payment Successful! 🎉
         </h1>
+
         <p className="text-gray-600">
-          {isClearing ? "Clearing your cart..." : "Redirecting to your orders..."}
+          {isClearing
+            ? "Clearing your cart..."
+            : "Redirecting to your orders..."}
         </p>
+
       </div>
+
     </div>
   );
 };

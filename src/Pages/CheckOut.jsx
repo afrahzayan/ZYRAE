@@ -45,65 +45,67 @@ const Checkout = () => {
 
   // Handle place order
   const handlePlaceOrder = async () => {
-    if (
-      !formData.fullName ||
-      !formData.email ||
-      !formData.phone ||
-      !formData.address ||
-      !formData.city
-    ) {
-      alert("Please fill all required fields");
-      return;
-    }
+  if (
+    !formData.fullName ||
+    !formData.email ||
+    !formData.phone ||
+    !formData.address ||
+    !formData.city
+  ) {
+    alert("Please fill all required fields");
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      const orderData = {
-        userName: formData.fullName,
-        userEmail: formData.email,
-        userPhone: formData.phone,
-        items: cartItems.map((item) => ({
-          productId: item.id || item.productId,
-          name: item.name,
-          price: parseFloat(item.price),
-          image: item.image,
-          quantity: item.quantity,
-          size: item.size || "50ml"
-        })),
-        shippingAddress: formData.address,
-        shippingCity: formData.city,
-        shippingState: formData.state,
-        shippingZip: formData.zipCode,
-        totalAmount: parseFloat(calculateTotal()),
-        paymentMethod: formData.paymentMethod
-      };
+  try {
+    const orderData = {
+      userName: formData.fullName,
+      userEmail: formData.email,
+      userPhone: formData.phone,
+      items: cartItems.map((item) => ({
+        productId: item.id || item.productId, // Handle both possible field names
+        name: item.name,
+        price: parseFloat(item.price),
+        image: item.image,
+        quantity: item.quantity,
+        size: item.size || "50ml"
+      })),
+      shippingAddress: formData.address,
+      shippingCity: formData.city,
+      shippingState: formData.state,
+      shippingZip: formData.zipCode,
+      totalAmount: parseFloat(calculateTotal()),
+      paymentMethod: formData.paymentMethod
+    };
 
-      // For Cash on Delivery
-      if (formData.paymentMethod === 'cod') {
-        const response = await api.post("/orders/create-cod-order", orderData);
-        
-        if (response.data.success) {
-          await clearCart();
-          setOrderPlaced(true);
-        } else {
-          alert("Failed to place order");
-        }
-      } 
-      // For Online Payment (Stripe)
-      else {
-        const response = await api.post("/orders/create-checkout-session", orderData);
-        // Redirect to stripe checkout page
-        window.location.href = response.data.url;
+    // For Cash on Delivery
+    if (formData.paymentMethod === 'cod') {
+      const response = await api.post("/orders/create-code-order", orderData);
+      
+      if (response.data.success) {
+        await clearCart();
+        setOrderPlaced(true);
+      } else {
+        alert(response.data.error || "Failed to place order");
       }
-
-    } catch (error) {
-      console.log(error);
-      alert("Payment failed");
-    } finally {
-      setLoading(false);
+    } 
+    // For Online Payment (Stripe)
+    else {
+      const response = await api.post("/orders/create-checkout-session", orderData);
+      // Redirect to stripe checkout page
+      window.location.href = response.data.url;
     }
-  };
+
+  } catch (error) {
+    console.error("Order error:", error);
+    // Show more specific error message
+    const errorMessage = error.response?.data?.error || error.response?.data?.message || "Payment failed";
+    alert(errorMessage);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // If cart is empty and order not placed
   if (cartItems.length === 0 && !orderPlaced) {

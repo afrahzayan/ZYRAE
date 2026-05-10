@@ -15,11 +15,17 @@ function Login() {
   const location = useLocation();
 
   useEffect(() => {
-    if(user)
-      navigate("/admin/home")
-    
-    return () => clearError();
-  }, [user]);
+
+    if (user?.role === "admin") {
+      navigate("/admin/home");
+    } else if (user?.role === "user") {
+      navigate("/");
+    }
+    return () => {
+      clearError();
+    };
+  }, [user, navigate, clearError]);
+  
 
   const { values, handleBlur, handleChange, handleSubmit, errors, touched } = useFormik({
     initialValues: initialValues,
@@ -29,15 +35,15 @@ function Login() {
       const user = await login(values.email, values.password);
       if (user) {
         resetForm();
-        
+
         // Check if user is blocked
         if (user.isBlocked) {
           alert('Your account has been blocked. Please contact administrator.');
           return;
         }
-        
+
         // Check user role and redirect accordingly
-        if (user.role === 'admin') {
+        if (user.data.role === 'admin') {
           navigate('/admin/home');
         } else {
           navigate('/');
@@ -61,12 +67,12 @@ function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#FFF2E1' }}>
       <div className="rounded-xl shadow-lg p-8 max-w-md w-full border" style={{ backgroundColor: '#FFF2E1', borderColor: '#D1BB9E' }}>
-  
+
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold mb-2" style={{ color: '#5A4638' }}>Zyraé</h1>
           <h2 className="text-xl font-semibold" style={{ color: '#A79277' }}>Welcome Back</h2>
         </div>
-        
+
         {location.state?.message && (
           <div className="rounded-lg px-4 py-3 mb-4 text-sm" style={{ backgroundColor: '#E8F5E9', border: '1px solid #4CAF50', color: '#2E7D32' }}>
             <div className="flex items-center">
@@ -77,7 +83,7 @@ function Login() {
             </div>
           </div>
         )}
-        
+
         {error && (
           <div className="rounded-lg px-4 py-3 mb-4 text-sm" style={{ backgroundColor: '#FFEBEE', border: '1px solid #EF5350', color: '#C62828' }}>
             <div className="flex items-center">
@@ -101,11 +107,10 @@ function Login() {
               value={values.email}
               onBlur={handleBlur}
               onChange={handleChange}
-              className={`w-full px-4 py-3 rounded-lg focus:outline-none transition duration-200 ${
-                errors.email && touched.email 
-                  ? 'border-2' 
+              className={`w-full px-4 py-3 rounded-lg focus:outline-none transition duration-200 ${errors.email && touched.email
+                  ? 'border-2'
                   : 'border'
-              }`}
+                }`}
               style={{
                 backgroundColor: '#FFF2E1',
                 borderColor: errors.email && touched.email ? '#EF5350' : '#D1BB9E',
@@ -134,11 +139,10 @@ function Login() {
               value={values.password}
               onBlur={handleBlur}
               onChange={handleChange}
-              className={`w-full px-4 py-3 rounded-lg focus:outline-none transition duration-200 ${
-                errors.password && touched.password 
-                  ? 'border-2' 
+              className={`w-full px-4 py-3 rounded-lg focus:outline-none transition duration-200 ${errors.password && touched.password
+                  ? 'border-2'
                   : 'border'
-              }`}
+                }`}
               style={{
                 backgroundColor: '#FFF2E1',
                 borderColor: errors.password && touched.password ? '#EF5350' : '#D1BB9E',
@@ -155,10 +159,10 @@ function Login() {
               </div>
             )}
           </div>
-          
+
           <div className="text-right">
-            <Link 
-              to="/forgot-password" 
+            <Link
+              to="/forgot-password"
               className="text-sm hover:underline transition duration-200"
               style={{ color: '#A79277' }}
             >
@@ -170,7 +174,7 @@ function Login() {
             type='submit'
             disabled={loading}
             className="w-full py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-            style={{ 
+            style={{
               backgroundColor: '#A79277',
               color: '#FFF2E1',
               border: '1px solid #8B7355'
@@ -191,11 +195,11 @@ function Login() {
               'Sign In'
             )}
           </button>
-        
+
           <p className="text-center text-sm mt-6" style={{ color: '#A79277' }}>
             Don't have an account?{' '}
-            <Link 
-              to="/registration" 
+            <Link
+              to="/registration"
               className="font-medium hover:underline transition duration-200"
               style={{ color: '#5A4638' }}
             >

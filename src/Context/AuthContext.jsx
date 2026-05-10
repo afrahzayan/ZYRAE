@@ -1,13 +1,22 @@
-import { createContext, useContext, useState,useEffect } from 'react';
-import { api } from '../API/Axios';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect
+} from "react";
+
+import { api } from "../API/Axios";
 
 const AuthContext = createContext();
 
 export const useAuth = () => {
+
   const context = useContext(AuthContext);
 
   if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
+    throw new Error(
+      "useAuth must be used within AuthProvider"
+    );
   }
 
   return context;
@@ -16,50 +25,105 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
 
   const [user, setUser] = useState(null);
-  const [role,setRole]=useState(null)
+
+  const [role, setRole] = useState(null);
 
   const [loading, setLoading] = useState(true);
 
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+
+  const [isInitializing, setIsInitializing] =
+    useState(true);
+
+  // ================= INITIAL AUTH CHECK =================
 
   useEffect(() => {
-       const fetchUser=async()=>{
-        try{
-            const res=await api.get("/auth/getUser");
-            setUser(res.data.UserData);
-            setRole(res.data.UserData.role)
-        }catch(e){
 
-              setUser(null);
-          setRole(null);
-        }finally{
-            setLoading(false)
+    let isMounted = true;
+
+    const publicRoutes = [
+      "/login",
+      "/registration",
+      "/forgot-password",
+      "/otp"
+    ];
+
+    const currentPath = window.location.pathname;
+
+    // SKIP AUTH CHECK ON PUBLIC ROUTES
+    if (publicRoutes.includes(currentPath)) {
+
+      setLoading(false);
+      setIsInitializing(false);
+
+      return;
+    }
+
+    const fetchUser = async () => {
+
+      try {
+
+        const res = await api.get("/auth/getUser");
+
+        if (isMounted) {
+
+          setUser(res.data.UserData);
+
+          setRole(res.data.UserData.role);
+
         }
-       };
-      
-       fetchUser();
-      
-    }, [])
+
+      } catch (e) {
+
+        if (isMounted) {
+
+          setUser(null);
+
+          setRole(null);
+
+        }
+
+      } finally {
+
+        if (isMounted) {
+
+          setLoading(false);
+
+          setIsInitializing(false);
+
+        }
+      }
+    };
+
+    fetchUser();
+
+    return () => {
+      isMounted = false;
+    };
+
+  }, []);
+
+  // ================= CLEAR ERROR =================
 
   const clearError = () => {
-    setError('');
+    setError("");
   };
-
-
 
   // ================= REGISTER =================
 
   const register = async (userData) => {
 
     setLoading(true);
-    setError('');
+
+    setError("");
 
     try {
 
-      const { cpassword, ...dataToSend } = userData;
+      const { cpassword, ...dataToSend } =
+        userData;
 
       const response = await api.post(
-        '/auth/register',
+        "/auth/register",
         dataToSend
       );
 
@@ -75,7 +139,7 @@ export const AuthProvider = ({ children }) => {
 
       setError(
         err.response?.data?.message ||
-        'Registration failed'
+        "Registration failed"
       );
 
       return false;
@@ -87,15 +151,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-
-
   // ================= LOGIN =================
 
   const login = async (email, password) => {
+
     setLoading(true);
+
     setError("");
 
     try {
+
       const response = await api.post(
         "/auth/login",
         {
@@ -104,21 +169,21 @@ export const AuthProvider = ({ children }) => {
         }
       );
 
-      // SAVE USER DATA
-      setUser({
+      const loggedInUser = {
         fname: response.data.fname,
         lname: response.data.lname,
         email: response.data.email,
         role: response.data.role,
-      });
+      };
+
+      setUser(loggedInUser);
+
+      setRole(response.data.role);
 
       return {
         success: true,
         data: response.data
       };
-
-
-
 
     } catch (error) {
 
@@ -130,11 +195,11 @@ export const AuthProvider = ({ children }) => {
       return false;
 
     } finally {
+
       setLoading(false);
+
     }
   };
-
-
 
   // ================= LOGOUT =================
 
@@ -142,9 +207,11 @@ export const AuthProvider = ({ children }) => {
 
     try {
 
-      await api.post('/auth/logout');
+      await api.post("/auth/logout");
 
       setUser(null);
+
+      setRole(null);
 
     } catch (err) {
 
@@ -153,15 +220,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-
-
   return (
+
     <AuthContext.Provider
       value={{
         user,
-        setUser, // ADD THIS
+        role,
+        setUser,
         loading,
         error,
+        isInitializing,
         register,
         login,
         logout,
@@ -170,5 +238,6 @@ export const AuthProvider = ({ children }) => {
     >
       {children}
     </AuthContext.Provider>
+
   );
 };
