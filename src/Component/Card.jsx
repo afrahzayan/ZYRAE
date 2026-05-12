@@ -146,10 +146,12 @@ function Card() {
     
     try {
       const productForCart = {
-        id: product._id,
+        productId: product._id || product.id,
+        _id: product._id || product.id,
+        id: product.id || product._id,
         name: product.name,
         price: parseFloat(product.price) || 0,
-        image: product.image
+        image: product.image,
       }
       
       const success = await addToCart(productForCart)

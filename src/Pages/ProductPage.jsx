@@ -176,17 +176,22 @@ const ProductPage = () => {
       return;
     }
 
+    const productKey = product._id || product.id;
+
     setAddingToCart((prev) => ({
       ...prev,
-      [product._id]: true,
+      [productKey]: true,
     }));
 
     try {
       const productForCart = {
-        id: product._id,
+        productId: product._id || product.id,
+        _id: product._id || product.id,
+        id: product.id || product._id,
         name: product.name,
         price: parseFloat(product.price) || 0,
         image: product.image,
+        description: product.description
       };
 
       const success = await addToCart(productForCart);
@@ -202,7 +207,7 @@ const ProductPage = () => {
     } finally {
       setAddingToCart((prev) => ({
         ...prev,
-        [product._id]: false,
+        [productKey]: false,
       }));
     }
   };

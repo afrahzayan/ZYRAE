@@ -152,10 +152,10 @@ const ProductDetails = () => {
       if (response.data && response.data.product) {
         const productData = response.data.product;
         const formattedProduct = {
-          ...productData,
-          _id: productData.id,
-          id: productData.id
-        };
+  ...productData,
+  _id: productData.id || productData._id,
+  id: productData.id || productData._id,
+};
         
         setProduct(formattedProduct);
         setError(null);
@@ -203,7 +203,9 @@ const ProductDetails = () => {
 
     try {
       const productWithDetails = {
-        id: product._id,
+  productId: product._id || product.id,
+  _id: product._id || product.id,
+  id: product.id || product._id,
         name: product.name,
         price: currentPrice,
         image: product.image,

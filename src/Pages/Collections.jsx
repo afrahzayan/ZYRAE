@@ -98,8 +98,8 @@ const Collections = () => {
         // Format products to have both 'id' and '_id'
         const formattedProducts = response.data.products.map(product => ({
           ...product,
-          _id: product.id,
-          id: product.id
+          _id: product._id,
+          id: product._id
         }));
         
         setProducts(formattedProducts);
@@ -135,11 +135,13 @@ const Collections = () => {
 
     try {
       const productForCart = {
-        id: product._id,
+        productId: product._id || product.id,
+        _id: product._id || product.id,
+        id: product.id || product._id,
         name: product.name,
         price: parseFloat(product.price) || 0,
         image: product.image,
-        description: product.description
+        description: product.description,
       };
 
       const success = await addToCart(productForCart);

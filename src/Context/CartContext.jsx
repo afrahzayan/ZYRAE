@@ -46,7 +46,7 @@ export const CartProvider = ({ children }) => {
 
       const response = await api.get("/cart");
 
-      setCartItems(response.data);
+      setCartItems(response.data || []);
 
     } catch (error) {
 
@@ -63,66 +63,44 @@ export const CartProvider = ({ children }) => {
 
 
 const addToCart = async (product) => {
-  if (!user) {
-    console.log("User not logged in");
-    return false;
-  }
-
-  setLoading(true);
-  setError("");
 
   try {
-    const productId = product._id || product.id;
-    
-    // CHECK IF PRODUCT ALREADY EXISTS IN CART
-    const existingItem = cartItems.find(
-      item => item.productId === productId || item._id === productId
-    );
 
-    let response;
-    
-    if (existingItem) {
-      // UPDATE EXISTING ITEM QUANTITY
-      const newQuantity = existingItem.quantity + (product.quantity || 1);
-      response = await api.put(`/cart/${existingItem._id}`, {
-        ...existingItem,
-        quantity: newQuantity
-      });
-      
-      // Update local state
-      setCartItems(prev =>
-        prev.map(item =>
-          item._id === existingItem._id
-            ? { ...item, quantity: newQuantity }
-            : item
-        )
-      );
-    } else {
-      // ADD NEW ITEM
-      const newCartItem = {
-        productId: productId,
-        name: product.name,
-        price: parseFloat(product.price),
-        image: product.image,
-        quantity: product.quantity || 1,
-        size: product.size || "50ml",
-      };
+    console.log("ADDING PRODUCT:", product);
 
-      response = await api.post("/cart", newCartItem);
-      setCartItems(prev => [...prev, response.data]);
+    const productId =
+      product.productId ||
+      product._id ||
+      product.id;
+
+    if (!productId) {
+
+      console.error("Missing Product ID", product);
+
+      return false;
     }
-    
+
+    await api.post("/cart", {
+      productId,
+      quantity: product.quantity || 1,
+      price: Number(product.price) || 0,
+      
+    });
+
+    await fetchCartItems();
+
     return true;
 
   } catch (error) {
-    console.error("Error adding to cart:", error.response?.data || error);
-    setError("Failed to add item to cart");
+
+    console.log(
+      "ADD TO CART ERROR:",
+      error.response?.data || error
+    );
+
     return false;
-  } finally {
-    setLoading(false);
   }
 };
-
 
 
   const removeFromCart = async (cartItemId) => {
@@ -176,8 +154,9 @@ const addToCart = async (product) => {
 
     // Then update backend
     const itemToUpdate = updatedCart.find(item => item._id === cartItemId);
-    await api.put(`/cart/${cartItemId}`, itemToUpdate);
-
+    await api.put(`/cart/${cartItemId}`, {
+     quantity: newQuantity
+     });
     return true;
 
   } catch (error) {
@@ -195,37 +174,38 @@ const addToCart = async (product) => {
 
   // CLEAR CART - Improved version
 const clearCart = async () => {
-    if (!user) {
-        setError("Please login to clear cart");
-        return false;
-    }
 
-    setLoading(true);
-    setError("");
+  if (!user) {
 
-    try {
-        //  Delete all items one by one (current approach)
-        const deletePromises = cartItems.map(item => 
-            api.delete(`/cart/${item._id}`).catch(err => {
-                console.error(`Failed to delete item ${item._id}:`, err);
-                return null;
-            })
-        );
-        
-        await Promise.all(deletePromises);
-        
-        // Clear local state
-        setCartItems([]);
-         console.log("Cart cleared successfully");
-        return true;
+    console.log("No user found");
 
-    } catch (error) {
-        console.error("Error clearing cart:", error);
-        setError("Failed to clear cart");
-        return false;
-    } finally {
-        setLoading(false);
-    }
+    return false;
+  }
+
+  setLoading(true);
+
+  try {
+
+    console.log("Calling clear cart API");
+
+    await api.delete("/cart/clear/all");
+
+    setCartItems([]);
+
+    console.log("Cart cleared successfully");
+
+    return true;
+
+  } catch (error) {
+
+    console.error("Error clearing cart:", error);
+
+    return false;
+
+  } finally {
+
+    setLoading(false);
+  }
 };
 
 

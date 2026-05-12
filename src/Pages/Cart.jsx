@@ -137,8 +137,8 @@ const handleQuantityChange = (itemId, change) => {
 
                     <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
                       <img
-                        src={item.image}
-                        alt={item.name}
+                        src={item.product?.image}
+                        alt={item.product?.name}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.target.src = 'https://via.placeholder.com/100x100?text=No+Image';
@@ -149,7 +149,7 @@ const handleQuantityChange = (itemId, change) => {
                     
                     <div className="flex-1">
                       <h3 className="font-semibold text-lg mb-1" style={{ color: '#5A4638' }}>
-                        {item.name}
+                        {item.product?.name}
                       </h3>
                       <p className="text-lg font-bold mb-3" style={{ color: '#A79277' }}>
                         ₹{item.price.toFixed(2)}
