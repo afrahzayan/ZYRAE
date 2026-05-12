@@ -22,7 +22,7 @@ const ProductsManagement = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/products');
+      const response = await api.get('/admin/product');
       setProducts(response.data);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -41,7 +41,7 @@ const ProductsManagement = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        await api.delete(`/products/${id}`);
+        await api.delete(`/admin/product/delete/${id}`);
         fetchProducts(); 
       } catch (error) {
         console.error('Error deleting product:', error);
@@ -78,7 +78,7 @@ const ProductsManagement = () => {
     }
 
     try {
-      await api.put(`/products/${editingProduct}`, editForm);
+      await api.put(`/admin/product/${editingProduct}`, editForm);
       fetchProducts(); 
       setEditingProduct(null); 
       alert('Product updated successfully!');

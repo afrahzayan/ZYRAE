@@ -50,7 +50,7 @@ const AddProduct = () => {
         updatedAt: new Date().toISOString()
       };
 
-      await api.post('/products', productData);
+      await api.post('/admin/product', productData);
       
       alert('Product added successfully!');
       navigate('/admin/products');

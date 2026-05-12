@@ -14,8 +14,8 @@ const UsersManagement = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/users');
-      setUsers(response.data);
+      const response = await api.get('/admin/user');
+      setUsers(response.data.users);
     } catch (error) {
       console.error('Error fetching users:', error);
     } finally {
@@ -30,17 +30,47 @@ const UsersManagement = () => {
   );
 
   const handleBlock = async (user) => {
-    if (window.confirm(`Are you sure you want to ${user.isBlocked ? 'unblock' : 'block'} ${user.fname} ${user.lname}?`)) {
+
+    if (
+      window.confirm(
+        `Are you sure you want to ${user.blocked ? "unblock" : "block"} ${user.fname} ${user.lname}?`
+      )
+    ) {
+
       try {
-        const updatedUser = {
-          ...user,
-          isBlocked: !user.isBlocked 
-        };
-        
-        await api.put(`/users/${user.id}`, updatedUser);
-        fetchUsers(); 
+
+        await api.put(`/admin/user/${user.id}`, {
+          blocked: !user.blocked
+        });
+
+        fetchUsers();
+
       } catch (error) {
-        console.error('Error blocking/unblocking user:', error);
+
+        console.error("Error blocking/unblocking user:", error);
+
+      }
+    }
+  };
+
+  const handleDelete = async (user) => {
+
+    if (
+      window.confirm(
+        `Are you sure you want to delete ${user.fname} ${user.lname}?`
+      )
+    ) {
+
+      try {
+
+        await api.delete(`/admin/user/delete/${user.id}`);
+
+        fetchUsers();
+
+      } catch (error) {
+
+        console.error("Error deleting user:", error);
+
       }
     }
   };
@@ -60,17 +90,17 @@ const UsersManagement = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-4 py-2 rounded-lg focus:outline-none"
-            style={{ 
+            style={{
               backgroundColor: '#FFF2E1',
               border: '1px solid #D1BB9E',
               color: '#5A4638'
             }}
           />
-          <svg 
+          <svg
             className="absolute right-3 top-2.5 w-5 h-5"
             style={{ color: '#A79277' }}
-            fill="none" 
-            stroke="currentColor" 
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -90,21 +120,21 @@ const UsersManagement = () => {
               </div>
             ) : (
               filteredUsers.map((user) => (
-                <div 
+                <div
                   key={user.id}
                   className="p-4 rounded-lg border"
-                  style={{ 
-                    backgroundColor: user.isBlocked ? '#FFEBEE' : '#FFF2E1',
-                    borderColor: user.isBlocked ? '#EF5350' : '#D1BB9E'
+                  style={{
+                    backgroundColor: user.blocked ? '#FFEBEE' : '#FFF2E1',
+                    borderColor: user.blocked ? '#EF5350' : '#D1BB9E'
                   }}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div 
+                      <div
                         className="w-10 h-10 rounded-full flex items-center justify-center"
-                        style={{ 
-                          backgroundColor: user.isBlocked ? '#EF5350' : '#A79277', 
-                          color: '#FFF2E1' 
+                        style={{
+                          backgroundColor: user.blocked ? '#EF5350' : '#A79277',
+                          color: '#FFF2E1'
                         }}
                       >
                         <span className="font-semibold">
@@ -117,9 +147,9 @@ const UsersManagement = () => {
                             {user.fname} {user.lname}
                           </h3>
                           {user.role === 'admin' && (
-                            <span 
+                            <span
                               className="px-2 py-0.5 text-xs rounded"
-                              style={{ 
+                              style={{
                                 backgroundColor: '#A79277',
                                 color: '#FFF2E1'
                               }}
@@ -127,10 +157,10 @@ const UsersManagement = () => {
                               Admin
                             </span>
                           )}
-                          {user.isBlocked && (
-                            <span 
+                          {user.blocked && (
+                            <span
                               className="px-2 py-0.5 text-xs rounded"
-                              style={{ 
+                              style={{
                                 backgroundColor: '#EF5350',
                                 color: '#FFF2E1'
                               }}
@@ -145,24 +175,39 @@ const UsersManagement = () => {
                         </p>
                       </div>
                     </div>
-                    
-                    <button
-                      onClick={() => handleBlock(user)}
-                      className="px-4 py-1 rounded text-sm font-medium transition duration-200"
-                      style={{ 
-                        backgroundColor: user.isBlocked ? '#4CAF50' : '#EF5350',
-                        color: '#FFF2E1',
-                        border: `1px solid ${user.isBlocked ? '#45A049' : '#D32F2F'}`
-                      }}
-                      onMouseOver={(e) => {
-                        e.target.style.backgroundColor = user.isBlocked ? '#45A049' : '#D32F2F';
-                      }}
-                      onMouseOut={(e) => {
-                        e.target.style.backgroundColor = user.isBlocked ? '#4CAF50' : '#EF5350';
-                      }}
-                    >
-                      {user.isBlocked ? 'Unblock' : 'Block'}
-                    </button>
+
+
+                    <div className="flex gap-2">
+
+                      {user.role !== "admin" && (
+                        <>
+                          <button
+                            onClick={() => handleBlock(user)}
+                            className="px-4 py-1 rounded text-sm font-medium transition duration-200"
+                            style={{
+                              backgroundColor: user.blocked ? '#4CAF50' : '#EF5350',
+                              color: '#FFF2E1',
+                              border: `1px solid ${user.blocked ? '#45A049' : '#D32F2F'}`
+                            }}
+                          >
+                            {user.blocked ? 'Unblock' : 'Block'}
+                          </button>
+
+                          <button
+                            onClick={() => handleDelete(user)}
+                            className="px-4 py-1 rounded text-sm font-medium transition duration-200"
+                            style={{
+                              backgroundColor: '#5A4638',
+                              color: '#FFF2E1',
+                              border: '1px solid #3E2F25'
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
+
+                    </div>
                   </div>
                 </div>
               ))
