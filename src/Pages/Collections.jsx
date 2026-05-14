@@ -8,7 +8,12 @@ import { useAuth } from '../Context/AuthContext';
 
 const HeartIconOutline = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+    />
   </svg>
 );
 
@@ -20,7 +25,12 @@ const HeartIconFilled = ({ className }) => (
 
 const ShoppingBagIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+    />
   </svg>
 );
 
@@ -39,7 +49,10 @@ const ToastNotification = ({ message, type, onClose }) => {
         style={{ backgroundColor: bgColor }}
       >
         <span>{message}</span>
-        <button onClick={onClose} className="ml-4">✕</button>
+
+        <button onClick={onClose} className="ml-4">
+          ✕
+        </button>
       </div>
     </div>
   );
@@ -47,11 +60,18 @@ const ToastNotification = ({ message, type, onClose }) => {
 
 const Collections = () => {
   const { collectionName } = useParams();
+
   const navigate = useNavigate();
 
   const { user } = useAuth();
+
   const { addToCart } = useCart();
-  const { addToWishlist, removeFromWishlist, isInWishlist, fetchWishlistItems } = useWishlist();
+
+  const {
+    addToWishlist,
+    removeFromWishlist,
+    isInWishlist,
+  } = useWishlist();
 
   const [toast, setToast] = useState({
     show: false,
@@ -60,62 +80,86 @@ const Collections = () => {
   });
 
   const [products, setProducts] = useState([]);
+
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState(null);
 
   const [addingToCart, setAddingToCart] = useState({});
+
   const [addingToWishlist, setAddingToWishlist] = useState({});
 
   const collectionDisplayNames = {
     floral: 'Floral Perfumes',
     woody: 'Woody Scents',
     citrus: 'Citrus Fragrances',
-    oriental: 'Oriental Blends'
+    oriental: 'Oriental Blends',
   };
 
   const collectionDescriptions = {
-    floral: 'Delicate and romantic scents inspired by nature\'s most beautiful flowers. Perfect for everyday elegance.',
-    woody: 'Warm and earthy fragrances with notes of sandalwood, cedar, and vetiver. Ideal for sophisticated evenings.',
-    citrus: 'Fresh and invigorating scents with zesty notes of lemon, orange, and bergamot. Great for daytime energy.',
-    oriental: 'Exotic and sensual blends with spices, amber, and musk. Perfect for special occasions.'
+    floral:
+      "Delicate and romantic scents inspired by nature's most beautiful flowers. Perfect for everyday elegance.",
+
+    woody:
+      'Warm and earthy fragrances with notes of sandalwood, cedar, and vetiver. Ideal for sophisticated evenings.',
+
+    citrus:
+      'Fresh and invigorating scents with zesty notes of lemon, orange, and bergamot. Great for daytime energy.',
+
+    oriental:
+      'Exotic and sensual blends with spices, amber, and musk. Perfect for special occasions.',
   };
 
   useEffect(() => {
     fetchProductsByCollection();
   }, [collectionName]);
 
-  // FIXED: Fetch products filtered by collection from backend
-  const fetchProductsByCollection = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+ const fetchProductsByCollection = async () => {
+  try {
+    setLoading(true);
+    setError(null);
 
-      // Send collection as query parameter to backend
-      const response = await api.get(`/product?collection=${collectionName}`);
-      console.log('Filtered products response:', response.data);
+    const response = await api.get(
+      `/product?collection=${collectionName}`
+    );
 
-      if (response.data && response.data.products) {
-        // Format products to have both 'id' and '_id'
-        const formattedProducts = response.data.products.map(product => ({
+    console.log('Collection Products:', response.data);
+
+    if (response.data && response.data.products) {
+
+      const formattedProducts =
+        response.data.products.map((product) => ({
           ...product,
-          _id: product._id,
-          id: product._id
+
+          _id: product.id || product._id,
+          id: product.id || product._id,
         }));
-        
-        setProducts(formattedProducts);
-      } else {
-        setProducts([]);
-      }
 
-    } catch (err) {
-      console.error('Error fetching products by collection:', err);
-      setError('Failed to load collection products. Please try again.');
-    } finally {
-      setLoading(false);
+      setProducts(formattedProducts);
+
+    } else {
+      setProducts([]);
     }
-  };
 
-  const showToast = (message, type = 'success') => {
+  } catch (err) {
+    console.error(
+      'Error fetching products by collection:',
+      err
+    );
+
+    setError(
+      'Failed to load collection products. Please try again.'
+    );
+
+  } finally {
+    setLoading(false);
+  }
+};
+
+  const showToast = (
+    message,
+    type = 'success'
+  ) => {
     setToast({
       show: true,
       message,
@@ -123,15 +167,37 @@ const Collections = () => {
     });
   };
 
-  const handleAddToCart = async (e, product) => {
+  const handleAddToCart = async (
+    e,
+    product
+  ) => {
     e.stopPropagation();
 
-    if (!user) {
-      navigate('/login', { state: { message: 'Please login to add items to cart' } });
+    // OUT OF STOCK CHECK
+    if (product.stock === 0) {
+      showToast(
+        'This product is out of stock',
+        'error'
+      );
+
       return;
     }
 
-    setAddingToCart(prev => ({ ...prev, [product._id]: true }));
+    if (!user) {
+      navigate('/login', {
+        state: {
+          message:
+            'Please login to add items to cart',
+        },
+      });
+
+      return;
+    }
+
+    setAddingToCart((prev) => ({
+      ...prev,
+      [product._id]: true,
+    }));
 
     try {
       const productForCart = {
@@ -144,28 +210,60 @@ const Collections = () => {
         description: product.description,
       };
 
-      const success = await addToCart(productForCart);
+      const success = await addToCart(
+        productForCart
+      );
+
       if (success) {
-        showToast(`${product.name} added to cart successfully!`, 'success');
+        showToast(
+          `${product.name} added to cart successfully!`,
+          'success'
+        );
+      } else {
+        showToast(
+          'Failed to add item to cart. Please try again.',
+          'error'
+        );
       }
     } catch (error) {
-      console.error('Error adding to cart:', error);
-      showToast('Failed to add to cart', 'error');
+      console.error(
+        'Error adding to cart:',
+        error
+      );
+
+      showToast(
+        'An error occurred. Please try again.',
+        'error'
+      );
     } finally {
-      setAddingToCart(prev => ({ ...prev, [product._id]: false }));
+      setAddingToCart((prev) => ({
+        ...prev,
+        [product._id]: false,
+      }));
     }
   };
 
-  // FIXED: Simplified wishlist toggle
-  const handleWishlistClick = async (e, product) => {
+  const handleWishlistClick = async (
+    e,
+    product
+  ) => {
     e.stopPropagation();
 
     if (!user) {
-      navigate('/login', { state: { message: 'Please login to add items to wishlist' } });
+      navigate('/login', {
+        state: {
+          message:
+            'Please login to add items to wishlist',
+        },
+      });
+
       return;
     }
 
-    setAddingToWishlist(prev => ({ ...prev, [product._id]: true }));
+    setAddingToWishlist((prev) => ({
+      ...prev,
+      [product._id]: true,
+    }));
 
     try {
       const productForWishlist = {
@@ -173,29 +271,52 @@ const Collections = () => {
         name: product.name,
         price: parseFloat(product.price) || 0,
         image: product.image,
-        description: product.description || ''
+        description:
+          product.description || '',
       };
 
       if (isInWishlist(product._id)) {
-        const success = await removeFromWishlist(product._id);
+        const success =
+          await removeFromWishlist(product._id);
+
         if (success) {
-          showToast(`${product.name} removed from wishlist`, 'success');
+          showToast(
+            `${product.name} removed from wishlist`,
+            'success'
+          );
         }
       } else {
-        const success = await addToWishlist(productForWishlist);
+        const success =
+          await addToWishlist(productForWishlist);
+
         if (success) {
-          showToast(`${product.name} added to wishlist!`, 'success');
+          showToast(
+            `${product.name} added to wishlist!`,
+            'success'
+          );
         }
       }
     } catch (error) {
-      console.error('Error toggling wishlist:', error);
-      showToast('Failed to update wishlist', 'error');
+      console.error(
+        'Error toggling wishlist:',
+        error
+      );
+
+      showToast(
+        'Failed to update wishlist',
+        'error'
+      );
     } finally {
-      setAddingToWishlist(prev => ({ ...prev, [product._id]: false }));
+      setAddingToWishlist((prev) => ({
+        ...prev,
+        [product._id]: false,
+      }));
     }
   };
 
-  const handleProductClick = (productId) => {
+  const handleProductClick = (
+    productId
+  ) => {
     navigate(`/product/${productId}`);
   };
 
@@ -203,13 +324,23 @@ const Collections = () => {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFF2E1' }}>
+
+        <div
+          className="min-h-screen flex items-center justify-center"
+          style={{ backgroundColor: '#FFF2E1' }}
+        >
           <div className="text-center">
             <div
               className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2"
               style={{ borderColor: '#A79277' }}
             ></div>
-            <p className="mt-4 font-medium" style={{ color: '#A79277' }}>Loading collection...</p>
+
+            <p
+              className="mt-4 font-medium"
+              style={{ color: '#A79277' }}
+            >
+              Loading collection...
+            </p>
           </div>
         </div>
       </>
@@ -220,15 +351,34 @@ const Collections = () => {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFF2E1' }}>
-          <div className="text-center p-8 rounded-xl shadow-sm" style={{ backgroundColor: '#EAD8C0', border: '1px solid #D1BB9E' }}>
-            <p className="mb-4 font-medium" style={{ color: '#5A4638' }}>
+
+        <div
+          className="min-h-screen flex items-center justify-center"
+          style={{ backgroundColor: '#FFF2E1' }}
+        >
+          <div
+            className="text-center p-8 rounded-xl shadow-sm"
+            style={{
+              backgroundColor: '#EAD8C0',
+              border: '1px solid #D1BB9E',
+            }}
+          >
+            <p
+              className="mb-4 font-medium"
+              style={{ color: '#5A4638' }}
+            >
               {error || 'Collection not found'}
             </p>
+
             <button
-              onClick={() => navigate('/products')}
+              onClick={() =>
+                navigate('/products')
+              }
               className="px-4 py-2 font-medium rounded-lg hover:opacity-90 transition duration-300"
-              style={{ backgroundColor: '#A79277', color: '#FFF2E1' }}
+              style={{
+                backgroundColor: '#A79277',
+                color: '#FFF2E1',
+              }}
             >
               Back to Products
             </button>
@@ -244,205 +394,231 @@ const Collections = () => {
         <ToastNotification
           message={toast.message}
           type={toast.type}
-          onClose={() => setToast((prev) => ({ ...prev, show: false }))}
+          onClose={() =>
+            setToast((prev) => ({
+              ...prev,
+              show: false,
+            }))
+          }
         />
       )}
 
       <Navbar />
-      <div className="min-h-screen" style={{ backgroundColor: '#FFF2E1' }}>
+
+      <div
+        className="min-h-screen"
+        style={{ backgroundColor: '#FFF2E1' }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Breadcrumb */}
-          <div className="mb-6">
-            <nav className="flex" aria-label="Breadcrumb">
-              <ol className="flex items-center space-x-2">
-                <li>
-                  <Link to="/" className="text-sm hover:underline" style={{ color: '#A79277' }}>
-                    Home
-                  </Link>
-                </li>
-                <li>
-                  <span className="mx-2" style={{ color: '#D1BB9E' }}>/</span>
-                </li>
-                <li>
-                  <Link to="/products" className="text-sm hover:underline" style={{ color: '#A79277' }}>
-                    Products
-                  </Link>
-                </li>
-                <li>
-                  <span className="mx-2" style={{ color: '#D1BB9E' }}>/</span>
-                </li>
-                <li className="text-sm font-medium" style={{ color: '#5A4638' }}>
-                  {collectionDisplayNames[collectionName] || collectionName}
-                </li>
-              </ol>
-            </nav>
-          </div>
 
-          {/* Header */}
+          {/* HEADER */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4" style={{ color: '#5A4638' }}>
-              {collectionDisplayNames[collectionName] || collectionName}
+            <h1
+              className="text-4xl font-bold mb-4"
+              style={{ color: '#5A4638' }}
+            >
+              {collectionDisplayNames[
+                collectionName
+              ] || collectionName}
             </h1>
-            <p className="text-lg max-w-3xl mx-auto" style={{ color: '#8B7355' }}>
-              {collectionDescriptions[collectionName] || 'Discover our curated collection of premium fragrances.'}
-            </p>
-            <p className="text-sm mt-2" style={{ color: '#A79277' }}>
-              {products.length} {products.length === 1 ? 'product' : 'products'} in this collection
+
+            <p
+              className="text-lg max-w-3xl mx-auto"
+              style={{ color: '#8B7355' }}
+            >
+              {collectionDescriptions[
+                collectionName
+              ] ||
+                'Discover our curated collection of premium fragrances.'}
             </p>
           </div>
 
-          {/* Products Grid */}
+          {/* PRODUCTS */}
           {products.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-lg mb-4 font-medium" style={{ color: '#A79277' }}>
+              <p
+                className="text-lg mb-4 font-medium"
+                style={{ color: '#A79277' }}
+              >
                 No products found in this collection.
               </p>
-              <button
-                onClick={() => navigate('/products')}
-                className="px-4 py-2 font-medium rounded-lg hover:opacity-90 transition duration-300"
-                style={{ backgroundColor: '#A79277', color: '#FFF2E1' }}
-              >
-                View All Products
-              </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((product) => (
                 <div
-                  key={product._id}
+                  key={product._id || product.id}
                   className="rounded-xl shadow-md hover:shadow-xl transition-all duration-300 group/card cursor-pointer overflow-hidden transform hover:-translate-y-1 border"
-                  style={{ backgroundColor: '#FFF2E1', borderColor: '#EAD8C0' }}
-                  onClick={() => handleProductClick(product._id)}
+                  style={{
+                    backgroundColor: '#FFF2E1',
+                    borderColor: '#EAD8C0',
+                  }}
+                  onClick={() =>
+                    handleProductClick(product._id || product.id)
+                  }
                 >
                   <div className="relative overflow-hidden rounded-t-xl bg-gray-50">
+
                     <img
                       src={product.image}
-                      alt={product.name || "Product"}
+                      alt={
+                        product.name ||
+                        'Product'
+                      }
                       className="w-full h-64 object-cover transition-transform duration-500 ease-in-out group-hover/card:scale-110"
                       onError={(e) => {
-                        e.target.src = "https://via.placeholder.com/300x300?text=Image+Not+Found";
+                        e.target.src =
+                          'https://via.placeholder.com/300x300?text=Image+Not+Found';
                       }}
                     />
 
+                    {/* WISHLIST BUTTON */}
                     <button
-                      onClick={(e) => handleWishlistClick(e, product)}
-                      disabled={addingToWishlist[product._id]}
+                      onClick={(e) =>
+                        handleWishlistClick(
+                          e,
+                          product
+                        )
+                      }
+                      disabled={
+                        addingToWishlist[
+                          product._id
+                        ]
+                      }
                       className="absolute top-2 right-2 rounded-full p-2 shadow-lg hover:bg-opacity-90 transition-all opacity-0 group-hover/card:opacity-100 disabled:opacity-50"
-                      style={{ backgroundColor: '#EAD8C0' }}
+                      style={{
+                        backgroundColor:
+                          '#EAD8C0',
+                      }}
                     >
-                      {isInWishlist(product._id) ? (
-                        <HeartIconFilled className="w-5 h-5" style={{ color: '#EF5350' }} />
+                      {isInWishlist(
+                        product._id
+                      ) ? (
+                        <HeartIconFilled
+                          className="w-5 h-5"
+                          style={{
+                            color: '#EF5350',
+                          }}
+                        />
                       ) : (
-                        <HeartIconOutline className="w-5 h-5" style={{ color: '#A79277' }} />
+                        <HeartIconOutline
+                          className="w-5 h-5"
+                          style={{
+                            color: '#A79277',
+                          }}
+                        />
                       )}
                     </button>
 
-                    <button
-                      onClick={(e) => handleAddToCart(e, product)}
-                      disabled={addingToCart[product._id]}
-                      className="absolute bottom-2 right-2 px-3 py-1 rounded-full text-sm font-medium opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 hover:opacity-90 disabled:opacity-50 flex items-center"
-                      style={{ backgroundColor: '#A79277', color: '#FFF2E1' }}
-                    >
-                      <ShoppingBagIcon className="w-4 h-4 mr-1" />
-                      {addingToCart[product._id] ? 'Adding...' : 'Add to Cart'}
-                    </button>
+                    {/* COLLECTION BADGE */}
+                    {product.collection && (
+                      <div className="absolute top-2 left-2">
+                        <span
+                          className="px-2 py-1 text-xs font-medium rounded"
+                          style={{
+                            backgroundColor:
+                              '#5A4638',
+                            color: '#FFF2E1',
+                          }}
+                        >
+                          {product.collection.toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* BOTTOM CONTAINER */}
+                    <div className="absolute bottom-2 left-2 right-2 flex items-center">
+
+                      {/* OUT OF STOCK */}
+                      {product.stock === 0 && (
+                        <div className="z-10">
+                          <span
+                            className="px-3 py-1 text-xs font-bold rounded"
+                            style={{
+                              backgroundColor:
+                                '#EF4444',
+                              color: 'white',
+                            }}
+                          >
+                            OUT OF STOCK
+                          </span>
+                        </div>
+                      )}
+
+                      {/* ADD TO CART */}
+                      <button
+                        onClick={(e) =>
+                          handleAddToCart(
+                            e,
+                            product
+                          )
+                        }
+                        disabled={
+                          addingToCart[
+                            product._id
+                          ] ||
+                          product.stock === 0
+                        }
+                        className={`ml-auto px-3 py-1 rounded-full text-sm font-medium transition-opacity duration-300 hover:opacity-90 disabled:opacity-50 flex items-center ${
+                          product.stock === 0
+                            ? 'opacity-0 group-hover/card:opacity-0'
+                            : 'opacity-0 group-hover/card:opacity-100'
+                        }`}
+                        style={{
+                          backgroundColor:
+                            '#A79277',
+                          color: '#FFF2E1',
+                        }}
+                      >
+                        <ShoppingBagIcon className="w-4 h-4 mr-1" />
+
+                        {addingToCart[
+                          product._id
+                        ]
+                          ? 'Adding...'
+                          : 'Add to Cart'}
+                      </button>
+                    </div>
                   </div>
 
                   <div className="p-4">
-                    <h3 className="font-semibold text-lg mb-2 truncate" style={{ color: '#5A4638' }}>
-                      {product.name || "Unnamed Product"}
+                    <h3
+                      className="font-semibold text-lg mb-2 truncate"
+                      style={{ color: '#5A4638' }}
+                    >
+                      {product.name ||
+                        'Unnamed Product'}
                     </h3>
 
-                    <p className="font-bold text-xl mb-2" style={{ color: '#A79277' }}>
-                      ₹{typeof product.price === 'number' ? product.price.toFixed(2) : (product.price || "0.00")}
+                    <p
+                      className="font-bold text-xl mb-2"
+                      style={{ color: '#A79277' }}
+                    >
+                      ₹
+                      {typeof product.price ===
+                      'number'
+                        ? product.price.toFixed(
+                            2
+                          )
+                        : product.price ||
+                          '0.00'}
                     </p>
 
                     {product.description && (
-                      <p className="text-sm mb-2 line-clamp-2" style={{ color: '#8B7355' }}>
+                      <p
+                        className="text-sm mb-2 line-clamp-2"
+                        style={{
+                          color: '#8B7355',
+                        }}
+                      >
                         {product.description}
                       </p>
                     )}
-
-                    <div className="mt-2">
-                      <span className="inline-block text-xs px-2 py-1 rounded" style={{ backgroundColor: '#EAD8C0', color: '#5A4638' }}>
-                        {collectionDisplayNames[product.collection] || product.collection}
-                      </span>
-                    </div>
                   </div>
                 </div>
               ))}
             </div>
           )}
-
-          {/* Info Section */}
-          <div className="mt-12 p-6 rounded-xl" style={{ backgroundColor: '#FFF9F0', border: '1px solid #D1BB9E' }}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
-                <h3 className="font-bold text-lg mb-4" style={{ color: '#5A4638' }}>About This Collection</h3>
-                <p style={{ color: '#8B7355' }}>
-                  Each fragrance in our {collectionDisplayNames[collectionName]} collection is carefully crafted
-                  using premium ingredients to create a unique olfactory experience. Our perfumes are
-                  designed to evoke emotions and memories through their distinctive scent profiles.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-bold text-lg mb-4" style={{ color: '#5A4638' }}>Scent Notes</h3>
-                <ul className="space-y-2" style={{ color: '#8B7355' }}>
-                  {collectionName === 'floral' && (
-                    <>
-                      <li>• Top Notes: Rose, Jasmine, Lily</li>
-                      <li>• Middle Notes: Violet, Peony, Iris</li>
-                      <li>• Base Notes: Musk, Amber, Vanilla</li>
-                    </>
-                  )}
-                  {collectionName === 'woody' && (
-                    <>
-                      <li>• Top Notes: Cedar, Sandalwood, Patchouli</li>
-                      <li>• Middle Notes: Vetiver, Oakmoss, Amberwood</li>
-                      <li>• Base Notes: Leather, Musk, Tonka Bean</li>
-                    </>
-                  )}
-                  {collectionName === 'citrus' && (
-                    <>
-                      <li>• Top Notes: Lemon, Orange, Bergamot</li>
-                      <li>• Middle Notes: Grapefruit, Lime, Mandarin</li>
-                      <li>• Base Notes: Neroli, Petitgrain, Musk</li>
-                    </>
-                  )}
-                  {collectionName === 'oriental' && (
-                    <>
-                      <li>• Top Notes: Cinnamon, Cardamom, Saffron</li>
-                      <li>• Middle Notes: Amber, Oud, Frankincense</li>
-                      <li>• Base Notes: Vanilla, Labdanum, Myrrh</li>
-                    </>
-                  )}
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          {/* Back Link */}
-          <div className="mt-8 text-center">
-            <Link
-              to="/products"
-              className="inline-flex items-center px-6 py-3 rounded-lg font-medium transition duration-200"
-              style={{
-                backgroundColor: 'transparent',
-                color: '#5A4638',
-                border: '2px solid #A79277'
-              }}
-              onMouseOver={(e) => {
-                e.target.style.backgroundColor = '#A79277';
-                e.target.style.color = '#FFF2E1';
-              }}
-              onMouseOut={(e) => {
-                e.target.style.backgroundColor = 'transparent';
-                e.target.style.color = '#5A4638';
-              }}
-            >
-              View All Collections
-            </Link>
-          </div>
         </div>
       </div>
     </>

@@ -5,7 +5,9 @@ import Dashboard from '../Component/Dashboard';
 
 const AddProduct = () => {
   const navigate = useNavigate();
+
   const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     name: '',
     collection: '',
@@ -13,392 +15,426 @@ const AddProduct = () => {
     price: '',
     size: '',
     fragranceNotes: '',
-    image: '',
+    image: null,
     stock: 10,
     featured: false,
-    category: 'perfume'
+    
   });
 
-
+  // HANDLE INPUT CHANGE
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
   };
 
-  
+  // HANDLE IMAGE CHANGE
+  const handleImageChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      image: e.target.files[0]
+    }));
+  };
+
+  // HANDLE SUBMIT
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    
-    if (!formData.name || !formData.price || !formData.collection) {
-      alert('Please fill in all required fields (Name, Price, Collection)');
+
+    if (
+      !formData.name ||
+      !formData.price ||
+      !formData.collection ||
+      !formData.image
+    ) {
+      alert('Please fill all required fields');
       return;
     }
 
     try {
       setLoading(true);
-      
-      
-      const productData = {
-        ...formData,
-        price: parseFloat(formData.price),
-        stock: parseInt(formData.stock),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
 
-      await api.post('/admin/product', productData);
-      
+      const productData = new FormData();
+
+      productData.append('name', formData.name);
+      productData.append('collection', formData.collection);
+      productData.append('description', formData.description);
+      productData.append('price', formData.price);
+      productData.append('size', formData.size);
+      productData.append('fragranceNotes', formData.fragranceNotes);
+      productData.append('stock', formData.stock);
+      productData.append('featured', formData.featured);
+      productData.append('image', formData.image);
+
+      await api.post('/admin/product', productData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
       alert('Product added successfully!');
+
       navigate('/admin/products');
-      
     } catch (error) {
-      console.error('Error adding product:', error);
-      alert('Failed to add product. Please try again.');
+      console.error(error);
+      alert('Failed to add product');
     } finally {
       setLoading(false);
     }
   };
 
-
-  const collections = [
-    'Floral',
-    'Woody ',
-    'Citrus',
-    'Oriental'
-  ];
+  const collections = ['Floral', 'Woody', 'Citrus', 'Oriental'];
 
   return (
     <Dashboard>
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-5xl mx-auto py-6 px-4">
         
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => navigate('/admin/products')}
-              className="p-2 rounded-lg hover:bg-opacity-20 transition duration-200"
-              style={{ 
-                backgroundColor: '#FFF2E1',
-                border: '1px solid #D1BB9E',
-                color: '#5A4638'
-              }}
+        {/* HEADER */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1
+              className="text-3xl font-bold"
+              style={{ color: '#5A4638' }}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-            </button>
-            <div>
-              <h2 className="text-2xl font-bold" style={{ color: '#5A4638' }}>Add New Product</h2>
-              <p className="text-sm" style={{ color: '#8B7355' }}>
-                Create a new perfume product
-              </p>
-            </div>
+              Add Product
+            </h1>
+
+            <p
+              className="text-sm mt-1"
+              style={{ color: '#8B7355' }}
+            >
+              Create a new perfume product
+            </p>
           </div>
+
+          <button
+            onClick={() => navigate('/admin/products')}
+            className="px-4 py-2 rounded-lg border transition"
+            style={{
+              borderColor: '#D1BB9E',
+              backgroundColor: '#FFF2E1',
+              color: '#5A4638'
+            }}
+          >
+            Back
+          </button>
         </div>
 
-      
-        <div className="bg-white rounded-xl border p-6" style={{ 
-          backgroundColor: '#FFF2E1',
-          borderColor: '#D1BB9E'
-        }}>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold pb-2 border-b" style={{ 
-                color: '#5A4638',
-                borderColor: '#D1BB9E'
-              }}>
-                Basic Information
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
-                <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: '#5A4638' }}>
-                    Product Name *
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2 rounded-lg focus:outline-none"
-                    style={{ 
-                      backgroundColor: '#FFFCF5',
-                      border: '1px solid #D1BB9E',
-                      color: '#5A4638'
-                    }}
-                    placeholder="Enter product name"
-                  />
-                </div>
-
-                
-                <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: '#5A4638' }}>
-                    Collection *
-                  </label>
-                  <select
-                    name="collection"
-                    value={formData.collection}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2 rounded-lg focus:outline-none"
-                    style={{ 
-                      backgroundColor: '#FFFCF5',
-                      border: '1px solid #D1BB9E',
-                      color: '#5A4638'
-                    }}
-                  >
-                    <option value="">Select Collection</option>
-                    {collections.map((collection) => (
-                      <option key={collection} value={collection}>
-                        {collection}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                
-                <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: '#5A4638' }}>
-                    Price (₹) *
-                  </label>
-                  <input
-                    type="number"
-                    name="price"
-                    value={formData.price}
-                    onChange={handleChange}
-                    required
-                    min="0"
-                    step="0.01"
-                    className="w-full px-4 py-2 rounded-lg focus:outline-none"
-                    style={{ 
-                      backgroundColor: '#FFFCF5',
-                      border: '1px solid #D1BB9E',
-                      color: '#5A4638'
-                    }}
-                    placeholder="0.00"
-                  />
-                </div>
-
-                
-                <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: '#5A4638' }}>
-                    Size (ml)
-                  </label>
-                  <input
-                    type="text"
-                    name="size"
-                    value={formData.size}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 rounded-lg focus:outline-none"
-                    style={{ 
-                      backgroundColor: '#FFFCF5',
-                      border: '1px solid #D1BB9E',
-                      color: '#5A4638'
-                    }}
-                    placeholder="e.g., 50ml, 100ml"
-                  />
-                </div>
-              </div>
-
-            
-              <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: '#5A4638' }}>
-                  Description
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows="3"
-                  className="w-full px-4 py-2 rounded-lg focus:outline-none"
-                  style={{ 
-                    backgroundColor: '#FFFCF5',
-                    border: '1px solid #D1BB9E',
-                    color: '#5A4638'
-                  }}
-                  placeholder="Enter product description..."
-                />
-              </div>
-
-              
-              <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: '#5A4638' }}>
-                  Fragrance Notes
-                </label>
-                <textarea
-                  name="fragranceNotes"
-                  value={formData.fragranceNotes}
-                  onChange={handleChange}
-                  rows="2"
-                  className="w-full px-4 py-2 rounded-lg focus:outline-none"
-                  style={{ 
-                    backgroundColor: '#FFFCF5',
-                    border: '1px solid #D1BB9E',
-                    color: '#5A4638'
-                  }}
-                  placeholder="Notes..."
-                />
-              </div>
-            </div>
-
+        {/* FORM */}
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-8"
+        >
           
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold pb-2 border-b" style={{ 
-                color: '#5A4638',
-                borderColor: '#D1BB9E'
-              }}>
-                Media & Inventory
-              </h3>
+          {/* BASIC INFO */}
+          <div
+            className="p-6 rounded-2xl border"
+            style={{
+              backgroundColor: '#FFF2E1',
+              borderColor: '#D1BB9E'
+            }}
+          >
+            <h2
+              className="text-xl font-semibold mb-5"
+              style={{ color: '#5A4638' }}
+            >
+              Basic Information
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-1" style={{ color: '#5A4638' }}>
-                    Image URL
-                  </label>
-                  <input
-                    type="text"
-                    name="image"
-                    value={formData.image}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 rounded-lg focus:outline-none"
-                    style={{ 
-                      backgroundColor: '#FFFCF5',
-                      border: '1px solid #D1BB9E',
-                      color: '#5A4638'
-                    }}
-                    placeholder="src/assets/pro5.jpg"
-                  />
-                  <p className="text-xs mt-1" style={{ color: '#8B7355' }}>
-                    Enter the full URL of the product image
-                  </p>
-                </div>
+              {/* PRODUCT NAME */}
+              <div>
+                <label
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: '#5A4638' }}
+                >
+                  Product Name *
+                </label>
 
-              
-                <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: '#5A4638' }}>
-                    Stock Quantity
-                  </label>
-                  <input
-                    type="number"
-                    name="stock"
-                    value={formData.stock}
-                    onChange={handleChange}
-                    min="0"
-                    className="w-full px-4 py-2 rounded-lg focus:outline-none"
-                    style={{ 
-                      backgroundColor: '#FFFCF5',
-                      border: '1px solid #D1BB9E',
-                      color: '#5A4638'
-                    }}
-                  />
-                </div>
-
-                
-                <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: '#5A4638' }}>
-                    Category
-                  </label>
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 rounded-lg focus:outline-none"
-                    style={{ 
-                      backgroundColor: '#FFFCF5',
-                      border: '1px solid #D1BB9E',
-                      color: '#5A4638'
-                    }}
-                  >
-                    <option value="perfume">Perfume</option>
-                    <option value="cologne">Cologne</option>
-                    <option value="body_mist">Body Mist</option>
-                    <option value="diffuser">Diffuser</option>
-                  </select>
-                </div>
-              </div>
-
-            
-              <div className="flex items-center space-x-2 pt-2">
                 <input
-                  type="checkbox"
-                  name="featured"
-                  id="featured"
-                  checked={formData.featured}
+                  type="text"
+                  name="name"
+                  value={formData.name}
                   onChange={handleChange}
-                  className="w-4 h-4"
-                  style={{ 
-                    accentColor: '#A79277'
+                  placeholder="Enter product name"
+                  className="w-full px-4 py-3 rounded-lg outline-none"
+                  style={{
+                    backgroundColor: '#FFFCF5',
+                    border: '1px solid #D1BB9E',
+                    color: '#5A4638'
                   }}
                 />
-                <label htmlFor="featured" className="text-sm" style={{ color: '#5A4638' }}>
-                  Mark as Featured Product
+              </div>
+
+              {/* COLLECTION */}
+              <div>
+                <label
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: '#5A4638' }}
+                >
+                  Collection *
                 </label>
+
+                <select
+                  name="collection"
+                  value={formData.collection}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg outline-none"
+                  style={{
+                    backgroundColor: '#FFFCF5',
+                    border: '1px solid #D1BB9E',
+                    color: '#5A4638'
+                  }}
+                >
+                  <option value="">Select Collection</option>
+
+                  {collections.map((collection) => (
+                    <option key={collection} value={collection}>
+                      {collection}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* PRICE */}
+              <div>
+                <label
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: '#5A4638' }}
+                >
+                  Price *
+                </label>
+
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  placeholder="₹ 0.00"
+                  className="w-full px-4 py-3 rounded-lg outline-none"
+                  style={{
+                    backgroundColor: '#FFFCF5',
+                    border: '1px solid #D1BB9E',
+                    color: '#5A4638'
+                  }}
+                />
+              </div>
+
+              {/* SIZE */}
+              <div>
+                <label
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: '#5A4638' }}
+                >
+                  Size
+                </label>
+
+                <input
+                  type="text"
+                  name="size"
+                  value={formData.size}
+                  onChange={handleChange}
+                  placeholder="50ml / 100ml"
+                  className="w-full px-4 py-3 rounded-lg outline-none"
+                  style={{
+                    backgroundColor: '#FFFCF5',
+                    border: '1px solid #D1BB9E',
+                    color: '#5A4638'
+                  }}
+                />
               </div>
             </div>
 
-          
+            {/* DESCRIPTION */}
+            <div className="mt-5">
+              <label
+                className="block text-sm font-medium mb-2"
+                style={{ color: '#5A4638' }}
+              >
+                Description
+              </label>
+
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                rows="4"
+                placeholder="Write product description..."
+                className="w-full px-4 py-3 rounded-lg outline-none"
+                style={{
+                  backgroundColor: '#FFFCF5',
+                  border: '1px solid #D1BB9E',
+                  color: '#5A4638'
+                }}
+              />
+            </div>
+
+            {/* NOTES */}
+            <div className="mt-5">
+              <label
+                className="block text-sm font-medium mb-2"
+                style={{ color: '#5A4638' }}
+              >
+                Fragrance Notes
+              </label>
+
+              <textarea
+                name="fragranceNotes"
+                value={formData.fragranceNotes}
+                onChange={handleChange}
+                rows="3"
+                placeholder="Top, middle and base notes..."
+                className="w-full px-4 py-3 rounded-lg outline-none"
+                style={{
+                  backgroundColor: '#FFFCF5',
+                  border: '1px solid #D1BB9E',
+                  color: '#5A4638'
+                }}
+              />
+            </div>
+          </div>
+
+          {/* MEDIA & INVENTORY */}
+          <div
+            className="p-6 rounded-2xl border"
+            style={{
+              backgroundColor: '#FFF2E1',
+              borderColor: '#D1BB9E'
+            }}
+          >
+            <h2
+              className="text-xl font-semibold mb-5"
+              style={{ color: '#5A4638' }}
+            >
+              Media & Inventory
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              
+              {/* IMAGE */}
+              <div className="md:col-span-2">
+                <label
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: '#5A4638' }}
+                >
+                  Product Image *
+                </label>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="w-full px-4 py-3 rounded-lg"
+                  style={{
+                    backgroundColor: '#FFFCF5',
+                    border: '1px solid #D1BB9E',
+                    color: '#5A4638'
+                  }}
+                />
+              </div>
+
+              {/* STOCK */}
+              <div>
+                <label
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: '#5A4638' }}
+                >
+                  Stock Quantity
+                </label>
+
+                <input
+                  type="number"
+                  name="stock"
+                  value={formData.stock}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg outline-none"
+                  style={{
+                    backgroundColor: '#FFFCF5',
+                    border: '1px solid #D1BB9E',
+                    color: '#5A4638'
+                  }}
+                />
+              </div>
+
+             
+            </div>
+
+            {/* FEATURED */}
+            <div className="mt-5 flex items-center gap-3">
+              <input
+                type="checkbox"
+                name="featured"
+                checked={formData.featured}
+                onChange={handleChange}
+                className="w-4 h-4"
+                style={{
+                  accentColor: '#A79277'
+                }}
+              />
+
+              <label
+                className="text-sm"
+                style={{ color: '#5A4638' }}
+              >
+                Featured Product
+              </label>
+            </div>
+
+            {/* IMAGE PREVIEW */}
             {formData.image && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold" style={{ color: '#5A4638' }}>
+              <div className="mt-6">
+                <h3
+                  className="text-sm font-medium mb-3"
+                  style={{ color: '#5A4638' }}
+                >
                   Image Preview
                 </h3>
-                <div className="flex justify-center">
-                  <div className="w-48 h-48 rounded-lg overflow-hidden border" style={{ borderColor: '#D1BB9E' }}>
-                    <img
-                      src={`http://localhost:5173/${formData.image}`}
-                      alt="Product Preview"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/192x192?text=Invalid+Image+URL';
-                      }}
-                    />
-                  </div>
+
+                <div
+                  className="w-52 h-52 rounded-xl overflow-hidden border"
+                  style={{ borderColor: '#D1BB9E' }}
+                >
+                  <img
+                    src={URL.createObjectURL(formData.image)}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               </div>
             )}
+          </div>
 
-            
-            <div className="flex justify-end space-x-4 pt-6 border-t" style={{ borderColor: '#D1BB9E' }}>
-              <button
-                type="button"
-                onClick={() => navigate('/admin/products')}
-                className="px-6 py-2 rounded-lg font-medium transition duration-200"
-                style={{ 
-                  backgroundColor: '#FFF2E1',
-                  color: '#5A4638',
-                  border: '1px solid #D1BB9E'
-                }}
-                disabled={loading}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-6 py-2 rounded-lg font-medium transition duration-200 disabled:opacity-50"
-                style={{ 
-                  backgroundColor: '#A79277',
-                  color: '#FFF2E1',
-                  border: '1px solid #8B7355'
-                }}
-                disabled={loading}
-              >
-                {loading ? (
-                  <span className="flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-                    Adding...
-                  </span>
-                ) : 'Add Product'}
-              </button>
-            </div>
-          </form>
-        </div>
+          {/* BUTTONS */}
+          <div className="flex justify-end gap-4">
+            <button
+              type="button"
+              onClick={() => navigate('/admin/products')}
+              className="px-6 py-3 rounded-xl border"
+              style={{
+                backgroundColor: '#FFF2E1',
+                borderColor: '#D1BB9E',
+                color: '#5A4638'
+              }}
+            >
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-6 py-3 rounded-xl font-medium disabled:opacity-50"
+              style={{
+                backgroundColor: '#A79277',
+                color: '#FFF2E1'
+              }}
+            >
+              {loading ? 'Adding Product...' : 'Add Product'}
+            </button>
+          </div>
+        </form>
       </div>
     </Dashboard>
   );

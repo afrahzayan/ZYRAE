@@ -35,14 +35,14 @@ const ToastNotification = ({ message, type, onClose }) => {
 
   return (
     <div className="fixed top-20 right-4 z-50 animate-slideIn">
-      <div 
+      <div
         className="flex items-center p-4 rounded-lg shadow-lg text-white"
         style={{ backgroundColor: bgColor }}
       >
-        <svg 
-          className="w-5 h-5 mr-2" 
-          fill="none" 
-          stroke="currentColor" 
+        <svg
+          className="w-5 h-5 mr-2"
+          fill="none"
+          stroke="currentColor"
           viewBox="0 0 24 24"
         >
           {type === 'success' ? (
@@ -52,7 +52,7 @@ const ToastNotification = ({ message, type, onClose }) => {
           )}
         </svg>
         <span className="font-medium">{message}</span>
-        <button 
+        <button
           onClick={onClose}
           className="ml-4 text-white hover:text-gray-200"
         >
@@ -85,14 +85,14 @@ function Card() {
       try {
         const response = await api.get('/product');
         console.log('Card products response:', response.data);
-        
+
         if (response.data && response.data.products) {
           const formattedProducts = response.data.products.slice(0, 6).map(product => ({
             ...product,
             _id: product.id,
             id: product.id
           }));
-          
+
           setProducts(formattedProducts);
         } else {
           setProducts([]);
@@ -136,14 +136,14 @@ function Card() {
 
   const handleAddToCart = async (e, product) => {
     e.stopPropagation()
-    
+
     if (!user) {
       navigate('/login', { state: { message: 'Please login to add items to cart' } })
       return
     }
 
     setAddingToCart(prev => ({ ...prev, [product._id]: true }))
-    
+
     try {
       const productForCart = {
         productId: product._id || product.id,
@@ -153,9 +153,9 @@ function Card() {
         price: parseFloat(product.price) || 0,
         image: product.image,
       }
-      
+
       const success = await addToCart(productForCart)
-      
+
       if (success) {
         showToast(`${product.name} added to cart successfully!`, 'success')
       } else {
@@ -169,20 +169,18 @@ function Card() {
     }
   }
 
-  // FIXED: Simplified wishlist toggle function
   const handleWishlistClick = async (e, product) => {
     e.stopPropagation()
-    
+
     if (!user) {
       navigate('/login', { state: { message: 'Please login to add items to wishlist' } })
       return
     }
 
     setAddingToWishlist(prev => ({ ...prev, [product._id]: true }))
-    
+
     try {
       if (isInWishlist(product._id)) {
-        // Remove from wishlist directly using product ID
         const success = await removeFromWishlist(product._id)
         if (success) {
           showToast(`${product.name} removed from wishlist`, 'success')
@@ -190,7 +188,6 @@ function Card() {
           showToast('Failed to remove from wishlist', 'error')
         }
       } else {
-        // Add to wishlist
         const productForWishlist = {
           id: product._id,
           name: product.name,
@@ -236,8 +233,8 @@ function Card() {
       <div className="p-8 max-w-7xl mx-auto bg-[#FFF2E1] rounded-xl shadow-lg border border-[#D1BB9E]">
         <h2 className="text-3xl font-bold mb-8 text-[#5A4638]">EXPLORE</h2>
         <div className="flex justify-center items-center h-40">
-          <div 
-            className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 mr-3" 
+          <div
+            className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 mr-3"
             style={{ borderColor: '#A79277' }}
           ></div>
           <p className="font-medium" style={{ color: '#A79277' }}>Loading products...</p>
@@ -249,43 +246,43 @@ function Card() {
   return (
     <>
       {toast.show && (
-        <ToastNotification 
-          message={toast.message} 
-          type={toast.type} 
-          onClose={() => setToast({ ...toast, show: false })} 
+        <ToastNotification
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast({ ...toast, show: false })}
         />
       )}
 
       <div className="p-8 max-w-7xl mx-auto bg-[#FFF2E1] rounded-xl shadow-lg border border-[#D1BB9E]">
         <h2 className="text-3xl font-bold mb-8 text-[#5A4638]">EXPLORE</h2>
         <div className="relative group">
-          <div 
+          <div
             ref={containerRef}
             className="flex overflow-x-auto gap-6 scroll-smooth pb-4"
             onScroll={checkScrollPosition}
-            style={{ 
-              scrollbarWidth: 'none', 
+            style={{
+              scrollbarWidth: 'none',
               msOverflowStyle: 'none'
             }}
           >
             {products.map((product) => (
-              <div 
+              <div
                 key={product._id}
                 className="flex-shrink-0 w-72 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 group/card cursor-pointer overflow-hidden transform hover:-translate-y-1 border"
                 style={{ backgroundColor: '#FFF2E1', borderColor: '#EAD8C0' }}
                 onClick={() => handleProductClick(product._id)}
               >
                 <div className="relative overflow-hidden rounded-t-xl bg-gray-50">
-                  <img 
-                    src={product.image || "https://via.placeholder.com/300x300?text=No+Image"} 
+                  <img
+                    src={product.image || "https://via.placeholder.com/300x300?text=No+Image"}
                     alt={product.name || "Product"}
                     className="w-full h-64 object-cover transition-transform duration-500 ease-in-out group-hover/card:scale-110"
                     onError={(e) => {
                       e.target.src = "https://via.placeholder.com/300x300?text=Image+Not+Found"
                     }}
                   />
-                  
-                  <button 
+
+                  <button
                     onClick={(e) => handleWishlistClick(e, product)}
                     disabled={addingToWishlist[product._id]}
                     className="absolute top-2 right-2 rounded-full p-2 shadow-lg hover:bg-opacity-90 transition-all opacity-0 group-hover/card:opacity-100 disabled:opacity-50"
@@ -299,33 +296,67 @@ function Card() {
                     )}
                   </button>
 
-                  <button 
-                    onClick={(e) => handleAddToCart(e, product)}
-                    disabled={addingToCart[product._id]}
-                    className="absolute bottom-2 right-2 px-3 py-1 rounded-full text-sm font-medium opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 hover:opacity-90 disabled:opacity-50 flex items-center"
-                    style={{ backgroundColor: '#A79277', color: '#FFF2E1' }}
-                  >
-                    <ShoppingBagIcon className="w-4 h-4 mr-1" />
-                    {addingToCart[product._id] ? 'Adding...' : 'Add to Cart'}
-                  </button>
-
+                  {/* COLLECTION BADGE - Top Left (Always at top, doesn't move) */}
                   {product.collection && (
                     <div className="absolute top-2 left-2">
-                      <span 
+                      <span
                         className="px-2 py-1 text-xs font-medium rounded"
-                        style={{ backgroundColor: '#5A4638', color: '#FFF2E1' }}
+                        style={{
+                          backgroundColor: '#5A4638',
+                          color: '#FFF2E1'
+                        }}
                       >
                         {product.collection.toUpperCase()}
                       </span>
                     </div>
                   )}
+
+                  {/* Buttons Container - Left side for Out of Stock badge, Right side for Add to Cart */}
+                  <div className="absolute bottom-2 left-2 right-2 flex items-center">
+                    {/* OUT OF STOCK BADGE */}
+                    {product.stock === 0 && (
+                      <div className="z-10">
+                        <span
+                          className="px-3 py-1 text-xs font-bold rounded"
+                          style={{
+                            backgroundColor: '#EF4444',
+                            color: 'white',
+                          }}
+                        >
+                          OUT OF STOCK
+                        </span>
+                      </div>
+                    )}
+
+                    {/* ADD TO CART BUTTON */}
+                    <button
+                      onClick={(e) => handleAddToCart(e, product)}
+                      disabled={
+                        addingToCart[product._id] || product.stock === 0
+                      }
+                      className={`ml-auto px-3 py-1 rounded-full text-sm font-medium transition-opacity duration-300 hover:opacity-90 disabled:opacity-50 flex items-center ${product.stock === 0
+                          ? 'opacity-0 group-hover/card:opacity-0'
+                          : 'opacity-0 group-hover/card:opacity-100'
+                        }`}
+                      style={{
+                        backgroundColor: '#A79277',
+                        color: '#FFF2E1',
+                      }}
+                    >
+                      <ShoppingBagIcon className="w-4 h-4 mr-1" />
+
+                      {addingToCart[product._id]
+                        ? 'Adding...'
+                        : 'Add to Cart'}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="p-4">
                   <h3 className="font-semibold text-lg mb-2 truncate" style={{ color: '#5A4638' }}>
                     {product.name || "Unnamed Product"}
                   </h3>
-                  
+
                   <p className="font-bold text-xl mb-2" style={{ color: '#A79277' }}>
                     ₹{typeof product.price === 'number' ? product.price.toFixed(2) : (product.price || "0.00")}
                   </p>
@@ -347,7 +378,7 @@ function Card() {
           </div>
 
           {showLeftButton && (
-            <button 
+            <button
               onClick={scrollLeft}
               className="absolute left-4 top-1/2 transform -translate-y-1/2 rounded-full p-3 shadow-xl hover:opacity-90 border transition-all duration-300 opacity-0 group-hover:opacity-100"
               style={{ backgroundColor: '#FFF2E1', borderColor: '#D1BB9E', color: '#A79277' }}
@@ -359,7 +390,7 @@ function Card() {
           )}
 
           {showRightButton && (
-            <button 
+            <button
               onClick={scrollRight}
               className="absolute right-4 top-1/2 transform -translate-y-1/2 rounded-full p-3 shadow-xl hover:opacity-90 border transition-all duration-300 opacity-0 group-hover:opacity-100"
               style={{ backgroundColor: '#FFF2E1', borderColor: '#D1BB9E', color: '#A79277' }}

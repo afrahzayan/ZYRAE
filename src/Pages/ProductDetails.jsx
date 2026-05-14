@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../API/Axios';
 import Navbar from '../Component/Navbar';
 import { useCart } from '../Context/CartContext';
@@ -37,6 +37,7 @@ const ToastNotification = ({ message, type, onClose }) => {
     const timer = setTimeout(() => {
       onClose();
     }, 3000);
+
     return () => clearTimeout(timer);
   }, [onClose]);
 
@@ -70,12 +71,19 @@ const ToastNotification = ({ message, type, onClose }) => {
             />
           )}
         </svg>
+
         <span className="font-medium">{message}</span>
+
         <button
           onClick={onClose}
           className="ml-4 text-white hover:text-gray-200"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -91,24 +99,35 @@ const ToastNotification = ({ message, type, onClose }) => {
 
 const ProductDetails = () => {
   const { id } = useParams();
+
   const navigate = useNavigate();
+
   const { user } = useAuth();
+
   const { addToCart } = useCart();
+
   const {
     addToWishlist,
     removeFromWishlist,
     isInWishlist,
-    fetchWishlistItems, // Add this to refresh wishlist if needed
   } = useWishlist();
 
   const [product, setProduct] = useState(null);
+
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState(null);
+
   const [selectedSize, setSelectedSize] = useState('50ml');
+
   const [quantity, setQuantity] = useState(1);
+
   const [addingToCart, setAddingToCart] = useState(false);
+
   const [addingToWishlist, setAddingToWishlist] = useState(false);
+
   const [currentPrice, setCurrentPrice] = useState(0);
+
   const [toast, setToast] = useState({
     show: false,
     message: '',
@@ -116,6 +135,7 @@ const ProductDetails = () => {
   });
 
   const sizes = ['50ml', '100ml'];
+
   const sizePriceMultipliers = {
     '50ml': 1,
     '100ml': 2,
@@ -128,7 +148,9 @@ const ProductDetails = () => {
   useEffect(() => {
     if (product && product.price) {
       const basePrice = parseFloat(product.price) || 0;
+
       const multiplier = sizePriceMultipliers[selectedSize] || 1;
+
       setCurrentPrice(basePrice * multiplier);
     }
   }, [product, selectedSize]);
@@ -136,42 +158,28 @@ const ProductDetails = () => {
   const fetchProductDetails = async () => {
     try {
       setLoading(true);
-      
-      if (!id) {
-        console.error('No product ID provided');
-        setError('Invalid product ID');
-        setLoading(false);
-        return;
-      }
-      
-      console.log('Fetching product with ID:', id);
-      
+
       const response = await api.get(`/product/${id}`);
-      console.log('API Response:', response.data);
-      
+
       if (response.data && response.data.product) {
         const productData = response.data.product;
+
         const formattedProduct = {
-  ...productData,
-  _id: productData.id || productData._id,
-  id: productData.id || productData._id,
-};
-        
+          ...productData,
+          _id: productData.id || productData._id,
+          id: productData.id || productData._id,
+        };
+
         setProduct(formattedProduct);
+
         setError(null);
       } else {
         setError('Product not found');
       }
-      
     } catch (err) {
       console.error('Error fetching product details:', err);
-      if (err.response?.status === 404) {
-        setError('Product not found');
-      } else if (err.response?.status === 500) {
-        setError('Server error. Please try again later.');
-      } else {
-        setError('Failed to load product details. Please try again.');
-      }
+
+      setError('Failed to load product details');
     } finally {
       setLoading(false);
     }
@@ -190,12 +198,18 @@ const ProductDetails = () => {
   };
 
   const handleAddToCart = async () => {
+    if (product.stock === 0) {
+      showToast('This product is out of stock', 'error');
+      return;
+    }
+
     if (!user) {
       navigate('/login', {
         state: {
           message: 'Please login to add items to cart',
         },
       });
+
       return;
     }
 
@@ -203,39 +217,43 @@ const ProductDetails = () => {
 
     try {
       const productWithDetails = {
-  productId: product._id || product.id,
-  _id: product._id || product.id,
-  id: product.id || product._id,
+        productId: product._id || product.id,
+        _id: product._id || product.id,
+        id: product.id || product._id,
         name: product.name,
         price: currentPrice,
         image: product.image,
         size: selectedSize,
-        quantity: quantity,
+        quantity,
       };
 
       const success = await addToCart(productWithDetails);
 
       if (success) {
-        showToast(`${product.name} (${selectedSize}) added to cart successfully!`, 'success');
+        showToast(
+          `${product.name} (${selectedSize}) added to cart successfully!`,
+          'success'
+        );
       } else {
-        showToast('Failed to add item to cart. Please try again.', 'error');
+        showToast('Failed to add item to cart', 'error');
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
-      showToast('An error occurred. Please try again.', 'error');
+
+      showToast('An error occurred', 'error');
     } finally {
       setAddingToCart(false);
     }
   };
 
-  // FIXED: Updated wishlist toggle function
   const handleWishlistToggle = async () => {
     if (!user) {
       navigate('/login', {
         state: {
-          message: 'Please login to add items to wishlist',
+          message: 'Please login to use wishlist',
         },
       });
+
       return;
     }
 
@@ -243,49 +261,43 @@ const ProductDetails = () => {
 
     try {
       if (isInWishlist(product._id)) {
-        // Remove from wishlist using product ID
         const success = await removeFromWishlist(product._id);
+
         if (success) {
-          showToast(`${product.name} removed from wishlist`, 'success');
-        } else {
-          showToast('Failed to remove from wishlist', 'error');
+          showToast(`${product.name} removed from wishlist`);
         }
       } else {
-        // Add to wishlist
         const productForWishlist = {
           id: product._id,
           name: product.name,
           price: parseFloat(product.price) || 0,
           image: product.image,
-          description: product.description || ''
+          description: product.description || '',
         };
-        
+
         const success = await addToWishlist(productForWishlist);
+
         if (success) {
-          showToast(`${product.name} added to wishlist!`, 'success');
-        } else {
-          showToast('Failed to add to wishlist', 'error');
+          showToast(`${product.name} added to wishlist!`);
         }
       }
     } catch (error) {
-      console.error('Error toggling wishlist:', error);
-      showToast('Failed to update wishlist. Please try again.', 'error');
+      console.error(error);
+
+      showToast('Wishlist update failed', 'error');
     } finally {
       setAddingToWishlist(false);
     }
   };
 
   const handleBuyNow = async () => {
-    if (!user) {
-      navigate('/login', {
-        state: {
-          message: 'Please login to buy products',
-        },
-      });
+    if (product.stock === 0) {
+      showToast('This product is out of stock', 'error');
       return;
     }
 
     await handleAddToCart();
+
     navigate('/cart');
   };
 
@@ -297,16 +309,20 @@ const ProductDetails = () => {
     return (
       <>
         <Navbar />
+
         <div
           className="min-h-screen flex items-center justify-center"
           style={{ backgroundColor: '#FFF2E1' }}
         >
           <div className="text-center">
-            <div 
+            <div
               className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2"
               style={{ borderColor: '#A79277' }}
             ></div>
-            <p className="mt-4" style={{ color: '#A79277' }}>Loading...</p>
+
+            <p className="mt-4" style={{ color: '#A79277' }}>
+              Loading...
+            </p>
           </div>
         </div>
       </>
@@ -317,16 +333,26 @@ const ProductDetails = () => {
     return (
       <>
         <Navbar />
+
         <div
           className="min-h-screen flex items-center justify-center"
           style={{ backgroundColor: '#FFF2E1' }}
         >
-          <div className="text-center p-8 rounded-xl" style={{ backgroundColor: '#EAD8C0' }}>
-            <p className="mb-4" style={{ color: '#5A4638' }}>{error || 'Product not found'}</p>
+          <div
+            className="text-center p-8 rounded-xl"
+            style={{ backgroundColor: '#EAD8C0' }}
+          >
+            <p className="mb-4" style={{ color: '#5A4638' }}>
+              {error || 'Product not found'}
+            </p>
+
             <button
               onClick={() => navigate('/products')}
               className="px-4 py-2 rounded-lg"
-              style={{ backgroundColor: '#A79277', color: '#FFF2E1' }}
+              style={{
+                backgroundColor: '#A79277',
+                color: '#FFF2E1',
+              }}
             >
               Back to Products
             </button>
@@ -342,57 +368,106 @@ const ProductDetails = () => {
         <ToastNotification
           message={toast.message}
           type={toast.type}
-          onClose={() => setToast({ ...toast, show: false })}
+          onClose={() =>
+            setToast({
+              ...toast,
+              show: false,
+            })
+          }
         />
       )}
 
       <Navbar />
 
-      <div className="min-h-screen" style={{ backgroundColor: '#FFF2E1' }}>
+      <div
+        className="min-h-screen"
+        style={{ backgroundColor: '#FFF2E1' }}
+      >
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div>
+
+            {/* IMAGE SECTION - No badge here */}
+            <div className="relative">
               <img
                 src={product.image}
                 alt={product.name}
                 className="w-full rounded-xl shadow-lg"
                 onError={(e) => {
-                  e.target.src = 'https://via.placeholder.com/500x500?text=Image+Not+Found';
+                  e.target.src =
+                    'https://via.placeholder.com/500x500?text=Image+Not+Found';
                 }}
               />
             </div>
 
+            {/* DETAILS SECTION - Out of Stock text shown here */}
             <div>
-              <h1 className="text-4xl font-bold mb-4" style={{ color: '#5A4638' }}>
+              <h1
+                className="text-4xl font-bold mb-4"
+                style={{ color: '#5A4638' }}
+              >
                 {product.name}
               </h1>
 
-              <p className="text-3xl font-bold mb-6" style={{ color: '#A79277' }}>
+              <p
+                className="text-3xl font-bold mb-6"
+                style={{ color: '#A79277' }}
+              >
                 ₹{currentPrice.toFixed(2)}
               </p>
 
-              <div className="mb-6">
-                <h3 className="font-semibold mb-2" style={{ color: '#5A4638' }}>
-                  Description
-                </h3>
-                <p style={{ color: '#8B7355' }}>{product.description}</p>
-              </div>
+              {/* Out of Stock Message - Only on details side */}
+              {product.stock === 0 && (
+                <div className="mb-4">
+                  <span
+                    className="inline-block px-4 py-2 rounded-full text-sm font-bold"
+                    style={{
+                      backgroundColor: '#EF4444',
+                      color: 'white',
+                    }}
+                  >
+                    OUT OF STOCK
+                  </span>
+                </div>
+              )}
 
               <div className="mb-6">
-                <h3 className="font-semibold mb-4" style={{ color: '#5A4638' }}>
+                <h3
+                  className="font-semibold mb-2"
+                  style={{ color: '#5A4638' }}
+                >
+                  Description
+                </h3>
+
+                <p style={{ color: '#8B7355' }}>
+                  {product.description}
+                </p>
+              </div>
+
+              {/* SIZE */}
+              <div className="mb-6">
+                <h3
+                  className="font-semibold mb-4"
+                  style={{ color: '#5A4638' }}
+                >
                   Select Size
                 </h3>
+
                 <div className="flex gap-4">
                   {sizes.map((size) => {
                     const isSelected = selectedSize === size;
+
                     return (
                       <button
                         key={size}
                         onClick={() => handleSizeChange(size)}
                         className="px-6 py-3 rounded-lg transition duration-200"
                         style={{
-                          backgroundColor: isSelected ? '#A79277' : '#FFF2E1',
-                          color: isSelected ? '#FFF2E1' : '#5A4638',
+                          backgroundColor: isSelected
+                            ? '#A79277'
+                            : '#FFF2E1',
+                          color: isSelected
+                            ? '#FFF2E1'
+                            : '#5A4638',
                           border: '1px solid #D1BB9E',
                         }}
                       >
@@ -403,37 +478,76 @@ const ProductDetails = () => {
                 </div>
               </div>
 
+              {/* QUANTITY */}
               <div className="mb-6">
-                <h3 className="font-semibold mb-4" style={{ color: '#5A4638' }}>
+                <h3
+                  className="font-semibold mb-4"
+                  style={{ color: '#5A4638' }}
+                >
                   Quantity
                 </h3>
+
                 <div className="flex items-center gap-4">
                   <button
-                    onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
-                    className="px-4 py-2 rounded-lg hover:opacity-90 transition duration-200"
-                    style={{ backgroundColor: '#A79277', color: '#FFF2E1' }}
+                    onClick={() =>
+                      setQuantity((prev) => Math.max(1, prev - 1))
+                    }
+                    disabled={product.stock === 0}
+                    className="px-4 py-2 rounded-lg disabled:opacity-50"
+                    style={{
+                      backgroundColor: '#A79277',
+                      color: '#FFF2E1',
+                    }}
                   >
                     -
                   </button>
-                  <span className="text-lg" style={{ color: '#5A4638' }}>{quantity}</span>
+
+                  <span
+                    className="text-lg"
+                    style={{ color: '#5A4638' }}
+                  >
+                    {quantity}
+                  </span>
+
                   <button
-                    onClick={() => setQuantity(prev => prev + 1)}
-                    className="px-4 py-2 rounded-lg hover:opacity-90 transition duration-200"
-                    style={{ backgroundColor: '#A79277', color: '#FFF2E1' }}
+                    onClick={() =>
+                      setQuantity((prev) =>
+                        prev < product.stock ? prev + 1 : prev
+                      )
+                    }
+                    disabled={
+                      product.stock === 0 ||
+                      quantity >= product.stock
+                    }
+                    className="px-4 py-2 rounded-lg disabled:opacity-50"
+                    style={{
+                      backgroundColor: '#A79277',
+                      color: '#FFF2E1',
+                    }}
                   >
                     +
                   </button>
                 </div>
               </div>
 
+              {/* BUTTONS */}
               <div className="flex gap-4">
                 <button
                   onClick={handleAddToCart}
-                  disabled={addingToCart}
+                  disabled={
+                    addingToCart || product.stock === 0
+                  }
                   className="flex-1 py-4 rounded-lg hover:opacity-90 transition duration-200 disabled:opacity-50"
-                  style={{ backgroundColor: '#A79277', color: '#FFF2E1' }}
+                  style={{
+                    backgroundColor: '#A79277',
+                    color: '#FFF2E1',
+                  }}
                 >
-                  {addingToCart ? 'Adding...' : 'Add to Cart'}
+                  {product.stock === 0
+                    ? 'Out of Stock'
+                    : addingToCart
+                    ? 'Adding...'
+                    : 'Add to Cart'}
                 </button>
 
                 <button
@@ -443,7 +557,9 @@ const ProductDetails = () => {
                   style={{
                     backgroundColor: '#FFF2E1',
                     border: '1px solid #D1BB9E',
-                    color: isInWishlist(product._id) ? '#EF5350' : '#5A4638',
+                    color: isInWishlist(product._id)
+                      ? '#EF5350'
+                      : '#5A4638',
                   }}
                 >
                   {isInWishlist(product._id) ? (
@@ -454,17 +570,42 @@ const ProductDetails = () => {
                 </button>
               </div>
 
+              {/* BUY NOW */}
               <button
                 onClick={handleBuyNow}
-                className="w-full mt-4 py-4 rounded-lg hover:opacity-90 transition duration-200"
-                style={{ backgroundColor: '#5A4638', color: '#FFF2E1' }}
+                disabled={product.stock === 0}
+                className="w-full mt-4 py-4 rounded-lg hover:opacity-90 transition duration-200 disabled:opacity-50"
+                style={{
+                  backgroundColor: '#5A4638',
+                  color: '#FFF2E1',
+                }}
               >
-                Buy Now (₹{calculateTotalPrice()})
+                {product.stock === 0
+                  ? 'Out of Stock'
+                  : `Buy Now (₹${calculateTotalPrice()})`}
               </button>
             </div>
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes slideIn {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+
+        .animate-slideIn {
+          animation: slideIn 0.3s ease-out;
+        }
+      `}</style>
     </>
   );
 };

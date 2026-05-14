@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../API/Axios';
 import Navbar from '../Component/Navbar';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useCart } from '../Context/CartContext';
 import { useWishlist } from '../Context/WishlistContext';
 import { useAuth } from '../Context/AuthContext';
@@ -120,7 +120,6 @@ const ProductPage = () => {
     addToWishlist,
     removeFromWishlist,
     isInWishlist,
-    // REMOVED: loading: wishlistLoading - don't use global loading for individual buttons
   } = useWishlist();
 
   const [addingToCart, setAddingToCart] = useState({});
@@ -141,22 +140,21 @@ const ProductPage = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      
+
       const response = await api.get('/product');
-      console.log('Products response:', response.data);
-      
+
       if (response.data && response.data.products) {
-        const formattedProducts = response.data.products.map(product => ({
+        const formattedProducts = response.data.products.map((product) => ({
           ...product,
-          _id: product.id,
-          id: product.id
+          _id: product.id || product._id,
+          id: product.id || product._id,
         }));
-        
+
         setProducts(formattedProducts);
       } else {
         setProducts([]);
       }
-      
+
       setError(null);
     } catch (err) {
       console.error('Error fetching products:', err);
@@ -168,6 +166,11 @@ const ProductPage = () => {
 
   const handleAddToCart = async (e, product) => {
     e.stopPropagation();
+
+    if (product.stock === 0) {
+      showToast('This product is out of stock', 'error');
+      return;
+    }
 
     if (!user) {
       navigate('/login', {
@@ -191,7 +194,7 @@ const ProductPage = () => {
         name: product.name,
         price: parseFloat(product.price) || 0,
         image: product.image,
-        description: product.description
+        description: product.description,
       };
 
       const success = await addToCart(productForCart);
@@ -233,14 +236,14 @@ const ProductPage = () => {
         name: product.name,
         price: parseFloat(product.price) || 0,
         image: product.image,
-        description: product.description || ''
+        description: product.description || '',
       };
 
       const currentlyInWishlist = isInWishlist(product._id);
-      
+
       if (currentlyInWishlist) {
         const success = await removeFromWishlist(product._id);
-        
+
         if (success) {
           showToast(`${product.name} removed from wishlist`, 'success');
         } else {
@@ -248,7 +251,7 @@ const ProductPage = () => {
         }
       } else {
         const success = await addToWishlist(productForWishlist);
-        
+
         if (success) {
           showToast(`${product.name} added to wishlist!`, 'success');
         } else {
@@ -274,6 +277,7 @@ const ProductPage = () => {
     return (
       <>
         <Navbar />
+
         <div
           className="min-h-screen flex items-center justify-center"
           style={{ backgroundColor: '#FFF2E1' }}
@@ -283,6 +287,7 @@ const ProductPage = () => {
               className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2"
               style={{ borderColor: '#A79277' }}
             ></div>
+
             <p
               className="mt-4 font-medium"
               style={{ color: '#A79277' }}
@@ -299,6 +304,7 @@ const ProductPage = () => {
     return (
       <>
         <Navbar />
+
         <div
           className="min-h-screen flex items-center justify-center"
           style={{ backgroundColor: '#FFF2E1' }}
@@ -316,6 +322,7 @@ const ProductPage = () => {
             >
               {error}
             </p>
+
             <button
               onClick={fetchProducts}
               className="px-4 py-2 font-medium rounded-lg hover:opacity-90 transition duration-300"
@@ -360,6 +367,7 @@ const ProductPage = () => {
           >
             Our Products
           </h1>
+
           <p
             className="text-lg"
             style={{ color: '#A79277' }}
@@ -386,6 +394,7 @@ const ProductPage = () => {
             >
               No products found in the database.
             </p>
+
             <button
               onClick={fetchProducts}
               className="px-4 py-2 font-medium rounded-lg hover:opacity-90 transition duration-300"
@@ -420,7 +429,7 @@ const ProductPage = () => {
                     }}
                   />
 
-                  {/* FIXED: Removed wishlistLoading from disabled */}
+                  {/* WISHLIST BUTTON */}
                   <button
                     onClick={(e) => handleWishlistClick(e, product)}
                     disabled={addingToWishlist[product._id]}
@@ -440,32 +449,60 @@ const ProductPage = () => {
                     )}
                   </button>
 
-                  <button
-                    onClick={(e) => handleAddToCart(e, product)}
-                    disabled={addingToCart[product._id]}
-                    className="absolute bottom-2 right-2 px-3 py-1 rounded-full text-sm font-medium opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 hover:opacity-90 disabled:opacity-50 flex items-center"
-                    style={{
-                      backgroundColor: '#A79277',
-                      color: '#FFF2E1',
-                    }}
-                  >
-                    <ShoppingBagIcon className="w-4 h-4 mr-1" />
-                    {addingToCart[product._id] ? 'Adding...' : 'Add to Cart'}
-                  </button>
-
+                  {/* COLLECTION BADGE - Top Left */}
                   {product.collection && (
                     <div className="absolute top-2 left-2">
                       <span
                         className="px-2 py-1 text-xs font-medium rounded"
                         style={{
                           backgroundColor: '#5A4638',
-                          color: '#FFF2E1',
+                          color: '#FFF2E1'
                         }}
                       >
                         {product.collection.toUpperCase()}
                       </span>
                     </div>
                   )}
+
+                  {/* Buttons Container - Left side for Out of Stock badge, Right side for Add to Cart */}
+                  <div className="absolute bottom-2 left-2 right-2 flex items-center">
+                    {/* OUT OF STOCK BADGE */}
+                    {product.stock === 0 && (
+                      <div className="z-10">
+                        <span
+                          className="px-3 py-1 text-xs font-bold rounded"
+                          style={{
+                            backgroundColor: '#EF4444',
+                            color: 'white',
+                          }}
+                        >
+                          OUT OF STOCK
+                        </span>
+                      </div>
+                    )}
+
+                    {/* ADD TO CART BUTTON */}
+                    <button
+                      onClick={(e) => handleAddToCart(e, product)}
+                      disabled={
+                        addingToCart[product._id] || product.stock === 0
+                      }
+                      className={`ml-auto px-3 py-1 rounded-full text-sm font-medium transition-opacity duration-300 hover:opacity-90 disabled:opacity-50 flex items-center ${product.stock === 0
+                          ? 'opacity-0 group-hover/card:opacity-0'
+                          : 'opacity-0 group-hover/card:opacity-100'
+                        }`}
+                      style={{
+                        backgroundColor: '#A79277',
+                        color: '#FFF2E1',
+                      }}
+                    >
+                      <ShoppingBagIcon className="w-4 h-4 mr-1" />
+
+                      {addingToCart[product._id]
+                        ? 'Adding...'
+                        : 'Add to Cart'}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="p-4">
@@ -475,6 +512,7 @@ const ProductPage = () => {
                   >
                     {product.name || 'Unnamed Product'}
                   </h3>
+
                   <p
                     className="font-bold text-xl mb-2"
                     style={{ color: '#A79277' }}
@@ -484,6 +522,7 @@ const ProductPage = () => {
                       ? product.price.toFixed(2)
                       : product.price || '0.00'}
                   </p>
+
                   {product.description && (
                     <p
                       className="text-sm mb-2 truncate"
@@ -513,10 +552,12 @@ const ProductPage = () => {
               >
                 Need Help?
               </h3>
+
               <p style={{ color: '#8B7355' }}>
                 Contact us for any questions about our products
               </p>
             </div>
+
             <button
               className="px-6 py-3 font-medium rounded-lg transition duration-300 hover:opacity-90"
               style={{

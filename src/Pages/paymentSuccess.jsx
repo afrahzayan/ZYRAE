@@ -4,78 +4,57 @@ import { useCart } from "../Context/CartContext";
 import { useAuth } from "../Context/AuthContext";
 
 const PaymentSuccess = () => {
-
-  const navigate = useNavigate();
-
+  const navigate    = useNavigate();
   const { clearCart } = useCart();
-
-  const { user } = useAuth();
-
+  const { user }    = useAuth();
   const [message, setMessage] = useState("Processing payment...");
 
   useEffect(() => {
-
-    // WAIT FOR USER AFTER STRIPE REDIRECT
-    if (!user) {
-
-      console.log("Waiting for user...");
-
-      return;
-    }
+    // Auth state rehydrates asynchronously after a Stripe redirect.
+    // Wait until user is available before doing anything.
+    if (!user) return;
 
     const handlePaymentSuccess = async () => {
-
       try {
-
-        console.log("User loaded:", user);
-
         setMessage("Clearing cart...");
-
         const success = await clearCart();
-
-        console.log("Cart clear result:", success);
-
-        if (success) {
-
-          setMessage("Payment successful! Redirecting...");
-
-        } else {
-
-          setMessage("Payment successful but cart clear failed");
-        }
-
+        setMessage(
+          success
+            ? "Payment successful! Redirecting to your orders..."
+            : "Payment successful! Redirecting..."
+        );
       } catch (error) {
-
-        console.log(error);
-
-        setMessage("Something went wrong");
+        console.error("PaymentSuccess: clearCart failed:", error);
+        setMessage("Payment confirmed. Redirecting...");
+      } finally {
+        setTimeout(() => navigate("/orders", { replace: true }), 2500);
       }
-
-      setTimeout(() => {
-
-        navigate("/orders", { replace: true });
-
-      }, 2000);
     };
 
     handlePaymentSuccess();
-
-  }, [user]);
+  // clearCart and navigate are stable refs — safe to include, won't re-run
+  }, [user, clearCart, navigate]);
 
   return (
-
-    <div className="min-h-screen flex items-center justify-center">
-
-      <div className="text-center">
-
-        <h1 className="text-3xl font-bold text-green-600 mb-4">
-          Payment Successful 🎉
+    <div
+      className="min-h-screen flex items-center justify-center"
+      style={{ backgroundColor: "#FFF2E1" }}
+    >
+      <div
+        className="text-center p-8 rounded-xl shadow-sm"
+        style={{ backgroundColor: "#FFF9F0", border: "1px solid #D1BB9E" }}
+      >
+        <div
+          className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
+          style={{ backgroundColor: "#EAD8C0" }}
+        >
+          <span className="text-4xl">🎉</span>
+        </div>
+        <h1 className="text-3xl font-bold mb-4" style={{ color: "#5A4638" }}>
+          Payment Successful!
         </h1>
-
-        <p>{message}</p>
-
+        <p style={{ color: "#8B7355" }}>{message}</p>
       </div>
-
     </div>
   );
 };
