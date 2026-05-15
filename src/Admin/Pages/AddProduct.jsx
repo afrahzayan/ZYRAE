@@ -18,7 +18,7 @@ const AddProduct = () => {
     image: null,
     stock: 10,
     featured: false,
-    
+
   });
 
   // HANDLE INPUT CHANGE
@@ -47,6 +47,7 @@ const AddProduct = () => {
       !formData.name ||
       !formData.price ||
       !formData.collection ||
+      !formData.size ||
       !formData.image
     ) {
       alert('Please fill all required fields');
@@ -90,7 +91,7 @@ const AddProduct = () => {
   return (
     <Dashboard>
       <div className="max-w-5xl mx-auto py-6 px-4">
-        
+
         {/* HEADER */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -127,7 +128,7 @@ const AddProduct = () => {
           onSubmit={handleSubmit}
           className="space-y-8"
         >
-          
+
           {/* BASIC INFO */}
           <div
             className="p-6 rounded-2xl border"
@@ -144,7 +145,7 @@ const AddProduct = () => {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              
+
               {/* PRODUCT NAME */}
               <div>
                 <label
@@ -223,6 +224,7 @@ const AddProduct = () => {
                 />
               </div>
 
+              
               {/* SIZE */}
               <div>
                 <label
@@ -232,19 +234,21 @@ const AddProduct = () => {
                   Size
                 </label>
 
-                <input
-                  type="text"
+                <select
                   name="size"
                   value={formData.size}
                   onChange={handleChange}
-                  placeholder="50ml / 100ml"
                   className="w-full px-4 py-3 rounded-lg outline-none"
                   style={{
                     backgroundColor: '#FFFCF5',
                     border: '1px solid #D1BB9E',
                     color: '#5A4638'
                   }}
-                />
+                >
+                  
+                  <option value="50ml">50ml</option>
+                  <option value="100ml">100ml</option>
+                </select>
               </div>
             </div>
 
@@ -313,7 +317,7 @@ const AddProduct = () => {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              
+
               {/* IMAGE */}
               <div className="md:col-span-2">
                 <label
@@ -359,7 +363,7 @@ const AddProduct = () => {
                 />
               </div>
 
-             
+
             </div>
 
             {/* FEATURED */}

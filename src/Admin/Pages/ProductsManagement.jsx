@@ -9,62 +9,80 @@ const ProductsManagement = () => {
   const [selectedCollection, setSelectedCollection] = useState('all');
   const [sortBy, setSortBy] = useState('');
   const [editingProduct, setEditingProduct] = useState(null);
+  const [collections, setCollections] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [editForm, setEditForm] = useState({
     name: '',
     collection: '',
     price: '',
     stock: '',
-    image: ''
+    image: null
   });
 
 
   useEffect(() => {
+    setPage(1);
+  }, [searchTerm, selectedCollection, sortBy]);
+
+  useEffect(() => {
     fetchProducts();
+  }, [searchTerm, selectedCollection, sortBy, page]);
+
+  useEffect(() => {
+
+    fetchCollections();
+
   }, []);
 
   const fetchProducts = async () => {
+
     try {
+
       setLoading(true);
-      const response = await api.get('/admin/product');
-      setProducts(response.data);
+
+      const response = await api.get('/admin/product', {
+        params: {
+          search: searchTerm,
+          collection: selectedCollection,
+          sortBy: sortBy,
+          page,
+          limit: 5
+        }
+      });
+
+      setProducts(response.data.products);
+      setTotalPages(response.data.totalPages);
+      setCollections(response.data.collections);
+
     } catch (error) {
+
       console.error('Error fetching products:', error);
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
-  const collections = [...new Set(products.map(product => product.collection).filter(Boolean))];
-  const filteredProducts = products
-    .filter(product => {
+  const fetchCollections = async () => {
 
-      const matchesSearch =
-        product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.collection?.toLowerCase().includes(searchTerm.toLowerCase());
+    try {
 
-      const matchesCollection =
-        selectedCollection === 'all' ||
-        product.collection === selectedCollection;
+      const response = await api.get('/admin/product/collections');
 
-      return matchesSearch && matchesCollection;
-    })
-    .sort((a, b) => {
+      setCollections(response.data.collections);
 
-      if (sortBy === 'name') {
-        return a.name.localeCompare(b.name);
-      }
+    } catch (error) {
 
-      if (sortBy === 'price') {
-        return a.price - b.price;
-      }
+      console.log(error);
 
-      if (sortBy === 'collection') {
-        return a.collection.localeCompare(b.collection);
-      }
+    }
+  };
 
-      return 0;
-    });
 
+  const filteredProducts = products;
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
@@ -86,9 +104,10 @@ const ProductsManagement = () => {
       collection: product.collection || '',
       price: product.price || '',
       stock: product.stock || 0,
-      image: product.image || ''
+      image: null
     });
   };
+
 
 
   const handleEditChange = (e) => {
@@ -99,20 +118,54 @@ const ProductsManagement = () => {
     }));
   };
 
+  const handleEditImageChange = (e) => {
+    setEditForm((prev) => ({
+      ...prev,
+      image: e.target.files[0]
+    }));
+  };
+
 
   const handleSaveEdit = async () => {
+
     if (!editForm.name || !editForm.price) {
       alert('Name and Price are required');
       return;
     }
 
     try {
-      await api.put(`/admin/product/${editingProduct}`, editForm);
+
+      const formData = new FormData();
+
+      formData.append('name', editForm.name);
+      formData.append('collection', editForm.collection);
+      formData.append('price', editForm.price);
+      formData.append('stock', editForm.stock);
+
+      if (editForm.image) {
+        formData.append('image', editForm.image);
+      }
+
+      await api.put(
+        `/admin/product/${editingProduct}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
       fetchProducts();
+
       setEditingProduct(null);
+
       alert('Product updated successfully!');
+
     } catch (error) {
+
       console.error('Error updating product:', error);
+
       alert('Failed to update product');
     }
   };
@@ -361,14 +414,66 @@ const ProductsManagement = () => {
                                   </div>
 
                                   <div>
-                                    <label className="block text-xs font-medium mb-1" style={{ color: '#5A4638' }}>
+                                    <label
+                                      className="block text-xs font-medium mb-1"
+                                      style={{ color: '#5A4638' }}
+                                    >
                                       Collection
                                     </label>
-                                    <input
-                                      type="text"
+
+                                    <select
                                       name="collection"
                                       value={editForm.collection}
                                       onChange={handleEditChange}
+                                      className="w-full px-2 py-1 text-sm rounded border"
+                                      style={{
+                                        backgroundColor: 'white',
+                                        borderColor: '#D1BB9E',
+                                        color: '#5A4638'
+                                      }}
+                                    >
+                                      <option value="Floral">Floral</option>
+                                      <option value="Woody">Woody</option>
+                                      <option value="Citrus">Citrus</option>
+                                      <option value="Oriental">Oriental</option>
+                                    </select>
+                                  </div>
+
+                                  <div>
+                                    <label
+                                      className="block text-xs font-medium mb-1"
+                                      style={{ color: '#5A4638' }}
+                                    >
+                                      Price
+                                    </label>
+
+                                    <input
+                                      type="number"
+                                      name="price"
+                                      value={editForm.price}
+                                      onChange={handleEditChange}
+                                      className="w-full px-2 py-1 text-sm rounded border"
+                                      style={{
+                                        backgroundColor: 'white',
+                                        borderColor: '#D1BB9E',
+                                        color: '#5A4638'
+                                      }}
+                                    />
+                                  </div>
+
+
+                                  <div>
+                                    <label
+                                      className="block text-xs font-medium mb-1"
+                                      style={{ color: '#5A4638' }}
+                                    >
+                                      Product Image
+                                    </label>
+
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={handleEditImageChange}
                                       className="w-full px-2 py-1 text-sm rounded border"
                                       style={{
                                         backgroundColor: 'white',
@@ -400,23 +505,7 @@ const ProductsManagement = () => {
                                     />
                                   </div>
 
-                                  <div>
-                                    <label className="block text-xs font-medium mb-1" style={{ color: '#5A4638' }}>
-                                      Image URL
-                                    </label>
-                                    <input
-                                      type="text"
-                                      name="image"
-                                      value={editForm.image}
-                                      onChange={handleEditChange}
-                                      className="w-full px-2 py-1 text-sm rounded border"
-                                      style={{
-                                        backgroundColor: 'white',
-                                        borderColor: '#D1BB9E',
-                                        color: '#5A4638'
-                                      }}
-                                    />
-                                  </div>
+
                                 </div>
 
                                 <div className="flex justify-end space-x-2 mt-3 pt-3 border-t" style={{ borderColor: '#D1BB9E' }}>
@@ -451,6 +540,40 @@ const ProductsManagement = () => {
                   )}
                 </tbody>
               </table>
+              <div className="flex justify-center items-center gap-3 mt-6">
+
+                <button
+                  disabled={page === 1}
+                  onClick={() => setPage(prev => prev - 1)}
+                  className="px-4 py-2 rounded disabled:opacity-50"
+                  style={{
+                    backgroundColor: '#A79277',
+                    color: '#FFF2E1'
+                  }}
+                >
+                  Previous
+                </button>
+
+                <span
+                  className="font-medium"
+                  style={{ color: '#5A4638' }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+
+                <button
+                  disabled={page === totalPages}
+                  onClick={() => setPage(prev => prev + 1)}
+                  className="px-4 py-2 rounded disabled:opacity-50"
+                  style={{
+                    backgroundColor: '#A79277',
+                    color: '#FFF2E1'
+                  }}
+                >
+                  Next
+                </button>
+
+              </div>
             </div>
           </div>
         )}
