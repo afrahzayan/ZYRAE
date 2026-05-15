@@ -3,7 +3,24 @@ import { api } from '../../API/Axios';
 import Dashboard from '../Component/Dashboard';
 import { Link } from 'react-router-dom';
 
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  Legend
+} from 'recharts';
+
 const AdminHome = () => {
+
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalProducts: 0,
@@ -12,111 +29,173 @@ const AdminHome = () => {
     recentOrders: [],
     recentUsers: []
   });
+
   const [loading, setLoading] = useState(true);
+
   const [revenueChartData, setRevenueChartData] = useState([]);
+  const [orderStatusData, setOrderStatusData] = useState([]);
+  const [weeklyOrdersData, setWeeklyOrdersData] = useState([]);
 
   useEffect(() => {
     fetchDashboardData();
   }, []);
 
   const fetchDashboardData = async () => {
+
     try {
+
       setLoading(true);
-      
-      const [usersRes, productsRes, ordersRes] = await Promise.all([
-        api.get('/users'),
-        api.get('/products'),
-        api.get('/orders')
-      ]);
 
-      const users = usersRes.data;
-      const products = productsRes.data;
-      const orders = ordersRes.data;
+      const dashboardRes = await api.get('/admin/dashboard');
 
-      
-      const totalRevenue = orders.reduce((sum, order) => 
-        sum + (order.totalAmount || 0), 0
-      );
-
-      
-      const recentOrders = [...orders]
-        .sort((a, b) => new Date(b.orderDate || b.createdAt) - new Date(a.orderDate || a.createdAt))
-        .slice(0, 5);
-
-      
-      const recentUsers = [...users]
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, 5);
-
-      
-      const monthlyRevenue = calculateMonthlyRevenue(orders);
+      const data = dashboardRes.data;
 
       setStats({
-        totalUsers: users.length,
-        totalProducts: products.length,
-        totalOrders: orders.length,
-        totalRevenue: totalRevenue,
-        recentOrders,
-        recentUsers
+        totalUsers: data.totalUsers,
+        totalProducts: data.totalProducts,
+        totalOrders: data.totalOrders,
+        totalRevenue: data.totalRevenue,
+        recentOrders: data.recentOrders,
+        recentUsers: data.recentUsers
       });
 
-      setRevenueChartData(monthlyRevenue);
-      
+      setRevenueChartData(data.revenueChartData);
+      setOrderStatusData(data.orderStatusData);
+      setWeeklyOrdersData(data.weeklyOrdersData);
+
     } catch (error) {
+
       console.error('Error fetching dashboard data:', error);
+
     } finally {
+
       setLoading(false);
     }
   };
 
   const calculateMonthlyRevenue = (orders) => {
+
     const months = [
       'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
     ];
-    
-    const currentDate = new Date();
-    const monthlyData = Array(6).fill(0).map((_, index) => {
-      const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - index, 1);
-      return {
-        month: months[date.getMonth()],
-        year: date.getFullYear(),
-        revenue: 0
-      };
-    }).reverse();
 
-    orders.forEach(order => {
+    const currentDate = new Date();
+
+    const monthlyData = Array(6)
+      .fill(0)
+      .map((_, index) => {
+
+        const date = new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth() - index,
+          1
+        );
+
+        return {
+          month: months[date.getMonth()],
+          year: date.getFullYear(),
+          revenue: 0
+        };
+
+      }).reverse();
+
+    orders.forEach((order) => {
+
       const orderDate = new Date(order.orderDate || order.createdAt);
+
       const orderMonth = orderDate.getMonth();
+
       const orderYear = orderDate.getFullYear();
-      
-      const monthIndex = monthlyData.findIndex(m => 
-        m.month === months[orderMonth] && m.year === orderYear
+
+      const monthIndex = monthlyData.findIndex(
+        (m) =>
+          m.month === months[orderMonth] &&
+          m.year === orderYear
       );
-      
+
       if (monthIndex !== -1) {
-        monthlyData[monthIndex].revenue += (order.totalAmount || 0);
+        monthlyData[monthIndex].revenue += order.totalAmount || 0;
       }
     });
 
     return monthlyData;
   };
 
+  const calculateOrderStatusData = (orders) => {
+
+    const counts = {
+      processing: 0,
+      shipped: 0,
+      delivered: 0,
+      cancelled: 0
+    };
+
+    orders.forEach((order) => {
+
+      const status = order.status?.toLowerCase();
+
+      if (counts[status] !== undefined) {
+        counts[status]++;
+      }
+    });
+
+    return [
+      { name: 'Processing', value: counts.processing },
+      { name: 'Shipped', value: counts.shipped },
+      { name: 'Delivered', value: counts.delivered },
+      { name: 'Cancelled', value: counts.cancelled }
+    ];
+  };
+
+  const calculateWeeklyOrders = (orders) => {
+
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    const weeklyData = days.map((day) => ({
+      day,
+      orders: 0
+    }));
+
+    orders.forEach((order) => {
+
+      const date = new Date(order.orderDate || order.createdAt);
+
+      const dayIndex = date.getDay();
+
+      weeklyData[dayIndex].orders += 1;
+    });
+
+    return weeklyData;
+  };
+
   const getStatusColor = (status) => {
-    switch(status?.toLowerCase()) {
-      case 'processing': return '#F59E0B';
-      case 'shipped': return '#3B82F6';
-      case 'delivered': return '#10B981';
-      case 'cancelled': return '#EF4444';
-      default: return '#8B7355';
+
+    switch (status?.toLowerCase()) {
+
+      case 'processing':
+        return '#F59E0B';
+
+      case 'shipped':
+        return '#3B82F6';
+
+      case 'delivered':
+        return '#10B981';
+
+      case 'cancelled':
+        return '#f8716a';
+
+      default:
+        return '#8B7355';
     }
   };
 
+
   const StatCard = ({ title, value, icon, color, link }) => (
-    <Link 
-      to={link} 
+    <Link
+      to={link}
       className="block p-6 rounded-xl border transition-all duration-200 hover:shadow-lg hover:transform hover:-translate-y-1"
-      style={{ 
+      style={{
         backgroundColor: '#FFF2E1',
         borderColor: '#D1BB9E'
       }}
@@ -126,7 +205,7 @@ const AdminHome = () => {
           <p className="text-sm font-medium" style={{ color: '#8B7355' }}>{title}</p>
           <h3 className="text-2xl font-bold mt-2" style={{ color: '#5A4638' }}>{value}</h3>
         </div>
-        <div 
+        <div
           className="w-12 h-12 rounded-full flex items-center justify-center"
           style={{ backgroundColor: color + '20', color: color }}
         >
@@ -135,11 +214,11 @@ const AdminHome = () => {
       </div>
       <div className="mt-4 flex items-center text-sm">
         <span style={{ color: '#A79277' }}>View Details</span>
-        <svg 
+        <svg
           className="ml-2 w-4 h-4"
           style={{ color: '#A79277' }}
-          fill="none" 
-          stroke="currentColor" 
+          fill="none"
+          stroke="currentColor"
           viewBox="0 0 24 24"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -148,18 +227,40 @@ const AdminHome = () => {
     </Link>
   );
 
+  if (loading) {
+    return (
+      <Dashboard>
+        <div className="text-center py-20">
+          Loading Dashboard...
+        </div>
+      </Dashboard>
+    );
+  }
+
   return (
     <Dashboard>
+
       <div className="space-y-6">
-        
+
         <div>
-          <h1 className="text-3xl font-bold" style={{ color: '#5A4638' }}>Admin Dashboard</h1>
-          <p className="text-sm mt-1" style={{ color: '#8B7355' }}>
-            Welcome back! 
+          <h1
+            className="text-3xl font-bold"
+            style={{ color: '#5A4638' }}
+          >
+            Admin Dashboard
+          </h1>
+
+          <p
+            className="text-sm mt-1"
+            style={{ color: '#8B7355' }}
+          >
+            Welcome back!
           </p>
         </div>
 
-        
+
+
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             title="Total Users"
@@ -172,7 +273,7 @@ const AdminHome = () => {
             color="#A79277"
             link="/admin/users"
           />
-          
+
           <StatCard
             title="Total Products"
             value={stats.totalProducts}
@@ -184,7 +285,7 @@ const AdminHome = () => {
             color="#8B7355"
             link="/admin/products"
           />
-          
+
           <StatCard
             title="Total Orders"
             value={stats.totalOrders}
@@ -196,7 +297,7 @@ const AdminHome = () => {
             color="#5A4638"
             link="/admin/orders"
           />
-          
+
           <StatCard
             title="Total Revenue"
             value={`₹${stats.totalRevenue.toFixed(2)}`}
@@ -211,125 +312,185 @@ const AdminHome = () => {
           />
         </div>
 
-      
-        <div 
+        {/* CHARTS */}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          {/* REVENUE CHART */}
+
+          <div
+            className="p-6 rounded-xl border"
+            style={{
+              backgroundColor: '#FFF2E1',
+              borderColor: '#D1BB9E'
+            }}
+          >
+
+            <h3
+              className="text-lg font-bold mb-6"
+              style={{ color: '#5A4638' }}
+            >
+              Monthly Revenue
+            </h3>
+
+            <div style={{ width: '100%', height: 300 }}>
+
+              <ResponsiveContainer>
+
+                <LineChart data={revenueChartData}>
+
+                  <CartesianGrid strokeDasharray="3 3" />
+
+                  <XAxis dataKey="month" />
+
+                  <YAxis />
+
+                  <Tooltip />
+
+                  <Line
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#A79277"
+                    strokeWidth={3}
+                  />
+
+                </LineChart>
+
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* PIE CHART */}
+
+          <div
+  className="p-6 rounded-xl border"
+  style={{
+    backgroundColor: '#FFF2E1',
+    borderColor: '#D1BB9E'
+  }}
+>
+
+  <h3
+    className="text-lg font-bold mb-6"
+    style={{ color: '#5A4638' }}
+  >
+    Order Status
+  </h3>
+
+  <div style={{ width: '100%', height: 300 }}>
+
+    <ResponsiveContainer>
+
+      <PieChart>
+
+        <Pie
+          data={orderStatusData}
+          dataKey="value"
+          nameKey="name"
+          outerRadius={100}
+          labelLine={false}
+          label={({
+            cx,
+            cy,
+            midAngle,
+            innerRadius,
+            outerRadius,
+            percent
+          }) => {
+
+            const RADIAN = Math.PI / 180;
+
+            const radius =
+              innerRadius +
+              (outerRadius - innerRadius) * 0.5;
+
+            const x =
+              cx + radius * Math.cos(-midAngle * RADIAN);
+
+            const y =
+              cy + radius * Math.sin(-midAngle * RADIAN);
+
+            return (
+              <text
+                x={x}
+                y={y}
+                fill="white"
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontSize={14}
+                fontWeight="bold"
+              >
+                {`${(percent * 100).toFixed(0)}%`}
+              </text>
+            );
+          }}
+        >
+
+          <Cell fill="#f8c773" />
+          <Cell fill="#85b0f6" />
+          <Cell fill="#04af76" />
+          <Cell fill="#ef817b" />
+
+        </Pie>
+
+        <Tooltip />
+
+        <Legend />
+
+      </PieChart>
+
+    </ResponsiveContainer>
+
+  </div>
+
+</div>
+        </div>
+
+        {/* WEEKLY ORDERS */}
+
+        <div
           className="p-6 rounded-xl border"
-          style={{ 
+          style={{
             backgroundColor: '#FFF2E1',
             borderColor: '#D1BB9E'
           }}
         >
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-bold" style={{ color: '#5A4638' }}>Recent Orders</h3>
-            <Link 
-              to="/admin/orders" 
-              className="text-sm hover:underline"
-              style={{ color: '#A79277' }}
-            >
-              View All
-            </Link>
-          </div>
-          
-          <div className="space-y-3">
-            {stats.recentOrders.length === 0 ? (
-              <p className="text-center py-4" style={{ color: '#8B7355' }}>No recent orders</p>
-            ) : (
-              stats.recentOrders.map((order) => (
-                <div 
-                  key={order.id}
-                  className="p-3 rounded-lg border flex items-center justify-between"
-                  style={{ 
-                    backgroundColor: '#FFFCF5',
-                    borderColor: '#EAD8C0'
-                  }}
-                >
-                  <div>
-                    <p className="font-medium" style={{ color: '#5A4638' }}>
-                      Order #{order.orderNumber}
-                    </p>
-                    <p className="text-xs" style={{ color: '#8B7355' }}>
-                      {order.userName} • {new Date(order.orderDate || order.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-end">
-                    <span className="font-bold" style={{ color: '#A79277' }}>
-                      ₹{order.totalAmount?.toFixed(2) || '0.00'}
-                    </span>
-                    <span 
-                      className="text-xs px-2 py-1 rounded mt-1"
-                      style={{ 
-                        backgroundColor: getStatusColor(order.status) + '20',
-                        color: getStatusColor(order.status)
-                      }}
-                    >
-                      {order.status?.charAt(0).toUpperCase() + order.status?.slice(1)}
-                    </span>
-                  </div>
-                </div>
-              ))
-            )}
+
+          <h3
+            className="text-lg font-bold mb-6"
+            style={{ color: '#5A4638' }}
+          >
+            Weekly Orders
+          </h3>
+
+          <div style={{ width: '100%', height: 300 }}>
+
+            <ResponsiveContainer>
+
+              <BarChart data={weeklyOrdersData}>
+
+                <CartesianGrid strokeDasharray="3 3" />
+
+                <XAxis dataKey="day" />
+
+                <YAxis />
+
+                <Tooltip />
+
+                <Bar
+                  dataKey="orders"
+                  fill="#A79277"
+                  radius={[6, 6, 0, 0]}
+                />
+
+              </BarChart>
+
+            </ResponsiveContainer>
           </div>
         </div>
 
-        
-
-        
-        <div 
-          className="p-6 rounded-xl border"
-          style={{ 
-            backgroundColor: '#FFF2E1',
-            borderColor: '#D1BB9E'
-          }}
-        >
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-bold" style={{ color: '#5A4638' }}>Recent Users</h3>
-            <Link 
-              to="/admin/users" 
-              className="text-sm hover:underline"
-              style={{ color: '#A79277' }}
-            >
-              View All
-            </Link>
-          </div>
-          
-          <div className="space-y-3">
-            {stats.recentUsers.length === 0 ? (
-              <p className="text-center py-4" style={{ color: '#8B7355' }}>No recent users</p>
-            ) : (
-              stats.recentUsers.map((user) => (
-                <div 
-                  key={user.id}
-                  className="p-3 rounded-lg border flex items-center"
-                  style={{ 
-                    backgroundColor: '#FFFCF5',
-                    borderColor: '#EAD8C0'
-                  }}
-                >
-                  <div 
-                    className="w-10 h-10 rounded-full flex items-center justify-center mr-3"
-                    style={{ backgroundColor: '#A79277', color: '#FFF2E1' }}
-                  >
-                    <span className="font-semibold">
-                      {user.fname?.charAt(0)}{user.lname?.charAt(0)}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="font-medium" style={{ color: '#5A4638' }}>
-                      {user.fname} {user.lname}
-                    </p>
-                    <p className="text-xs" style={{ color: '#8B7355' }}>
-                      {user.email}
-                    </p>
-                    <p className="text-xs mt-1" style={{ color: '#A79277' }}>
-                      Joined {new Date(user.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
       </div>
+
     </Dashboard>
   );
 };

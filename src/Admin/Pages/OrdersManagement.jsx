@@ -14,16 +14,33 @@ const OrdersManagement = () => {
   }, []);
 
   const fetchOrders = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get('/orders');
+  try {
+
+    setLoading(true);
+
+    const response = await api.get('/admin/orders');
+
+   
+
+    // SAFETY CHECK
+    if (Array.isArray(response.data)) {
       setOrders(response.data);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-    } finally {
-      setLoading(false);
+    } else {
+      setOrders([]);
     }
-  };
+
+  } catch (error) {
+
+    console.error('Error fetching orders:', error);
+
+    setOrders([]);
+
+  } finally {
+
+    setLoading(false);
+
+  }
+};
 
   
   const filteredOrders = orders.filter(order => {
@@ -39,24 +56,27 @@ const OrdersManagement = () => {
 
   
   const updateOrderStatus = async (orderId, newStatus) => {
-    try {
-      const orderToUpdate = orders.find(order => order.id === orderId);
-      if (!orderToUpdate) return;
+  try {
 
-      const updatedOrder = { ...orderToUpdate, status: newStatus };
-      await api.put(`/orders/${orderId}`, updatedOrder);
-      
-      
-      setOrders(prevOrders => 
-        prevOrders.map(order => 
-          order.id === orderId ? { ...order, status: newStatus } : order
-        )
-      );
-    } catch (error) {
-      console.error('Error updating order status:', error);
-      alert('Failed to update order status');
-    }
-  };
+    await api.put(`/admin/orders/${orderId}`, {
+      status: newStatus
+    });
+
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order.id === orderId
+          ? { ...order, status: newStatus }
+          : order
+      )
+    );
+
+  } catch (error) {
+
+    console.error("Error updating order status:", error);
+
+    alert("Failed to update order status");
+  }
+};
 
   
   const getStatusColor = (status) => {
