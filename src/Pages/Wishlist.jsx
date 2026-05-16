@@ -1,7 +1,7 @@
-import { useWishlist } from '../Context/WishlistContext';
-import { useCart } from '../Context/CartContext';
+import { useWishlist } from '../context/wishlistContext';
+import { useCart } from '../context/cartContext';
 import { Link } from 'react-router-dom';
-import Navbar from '../Component/Navbar';
+import Navbar from '../component/navbar';
 
 const HeartIconFilled = ({ className }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24">

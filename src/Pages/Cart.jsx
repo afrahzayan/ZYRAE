@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useCart } from '../Context/CartContext';
+import { useCart } from '../context/cartContext';
 import { Link, useNavigate } from 'react-router-dom';
-import Navbar from '../Component/Navbar';
+import Navbar from '../component/navbar';
 
 
 const DeleteIcon = ({ className }) => (

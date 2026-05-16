@@ -1,13 +1,12 @@
 import { useState, useCallback } from 'react';
-import { useCart } from '../Context/CartContext';
-import { useAuth } from '../Context/AuthContext';
+import { useCart } from '../context/cartContext';
+import { useAuth } from '../context/authContext';
 import { Link, useNavigate } from 'react-router-dom';
-import Navbar from '../Component/Navbar';
-import { api } from '../API/Axios';
+import Navbar from '../component/navbar';
+import { api } from '../api/axios';
 
-// ---------------------------------------------------------------------------
-// Toast — replaces all alert() calls. Auto-dismisses after 4 seconds.
-// ---------------------------------------------------------------------------
+
+
 const Toast = ({ toasts, removeToast }) => {
   const styles = {
     success: { bg: '#10B981', icon: '✓' },
@@ -65,21 +64,8 @@ const useToast = () => {
   return { toasts, addToast, removeToast };
 };
 
-// ---------------------------------------------------------------------------
-// Cart item normalizer
-//
-// The cartSchema stores items as: { product: ObjectId, price, quantity }
-// When CartContext fetches and populates the cart, each item arrives as:
-//   { product: { _id, name, price, image, description }, price, quantity }
-//
-// But some contexts (e.g. optimistic local adds) may store flat items:
-//   { id/productId, name, price, image, quantity }
-//
-// This function normalizes BOTH shapes into one consistent flat object so
-// the rest of the checkout code never has to check item.product?.name vs item.name.
-// ---------------------------------------------------------------------------
+
 const normalizeCartItem = (item) => {
-  // Populated shape: item.product is an object with name/image
   if (item.product && typeof item.product === 'object' && item.product.name) {
     return {
       productId: item.product._id || item.product.id,
@@ -91,7 +77,6 @@ const normalizeCartItem = (item) => {
     };
   }
 
-  // Flat shape: item.name is directly on the item
   return {
     productId: item.productId || item.id || item._id,
     name:      item.name,
@@ -102,9 +87,8 @@ const normalizeCartItem = (item) => {
   };
 };
 
-// ---------------------------------------------------------------------------
-// Checkout
-// ---------------------------------------------------------------------------
+
+
 const Checkout = () => {
   const { cartItems, getTotalPrice, clearCart } = useCart();
   const { user } = useAuth();
@@ -132,8 +116,8 @@ const Checkout = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Sanitize getTotalPrice() — CartContext may return a formatted string
-  // like "1,234.00". parseFloat("1,234.00") silently returns 1.
+
+
   const getNumericTotal = () => {
     const raw = String(getTotalPrice()).replace(/,/g, '');
     const n   = parseFloat(raw);
@@ -165,11 +149,9 @@ const Checkout = () => {
     setLoading(true);
 
     try {
-      // Normalize all cart items before sending to the backend.
-      // This handles both populated {product:{name,image}} and flat {name,image} shapes.
+
       const normalizedItems = cartItems.map(normalizeCartItem);
 
-      // Sanity check — every item must have a name and price after normalization
       const badItem = normalizedItems.find((i) => !i.name || i.price == null);
       if (badItem) {
         addToast('One or more cart items have missing data. Please refresh and try again.', 'error');
@@ -226,7 +208,6 @@ const Checkout = () => {
     }
   };
 
-  // Stable key for each cart item regardless of which shape CartContext uses
   const getItemKey  = (item) => {
     if (item.product && typeof item.product === 'object') return item.product._id || item.product.id;
     return item.id ?? item.productId ?? item._id ?? item.name;
@@ -235,7 +216,7 @@ const Checkout = () => {
   const getItemImage = (item) => (item.product?.image ?? item.image ?? '');
   const getItemPrice = (item) => parseFloat(item.price ?? item.product?.price ?? 0);
 
-  // ── Shared styles ──────────────────────────────────────────────────────────
+
   const cardStyle = {
     backgroundColor: '#FFF9F0',
     border: '1px solid #D1BB9E',
@@ -252,7 +233,6 @@ const Checkout = () => {
     border: '1px solid #8B7355',
   };
 
-  // ── Empty cart ─────────────────────────────────────────────────────────────
   if (cartItems.length === 0 && !orderPlaced) {
     return (
       <>
@@ -277,7 +257,6 @@ const Checkout = () => {
     );
   }
 
-  // ── COD success ────────────────────────────────────────────────────────────
   if (orderPlaced) {
     return (
       <>
@@ -322,7 +301,7 @@ const Checkout = () => {
     );
   }
 
-  // ── Main form ──────────────────────────────────────────────────────────────
+
   const textFields = [
     { label: 'Full Name',    name: 'fullName', type: 'text',  required: true },
     { label: 'Email',        name: 'email',    type: 'email', required: true },
@@ -354,10 +333,8 @@ const Checkout = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-            {/* ── Left: Shipping + Payment ────────────────────────────────── */}
             <div>
 
-              {/* Shipping Details */}
               <div className="p-6 rounded-xl mb-6" style={cardStyle}>
                 <h2 className="text-xl font-bold mb-6" style={{ color: '#5A4638' }}>Shipping Details</h2>
 
@@ -435,7 +412,7 @@ const Checkout = () => {
                 </div>
               </div>
 
-              {/* Payment Method */}
+              
               <div className="p-6 rounded-xl" style={cardStyle}>
                 <h2 className="text-xl font-bold mb-6" style={{ color: '#5A4638' }}>Payment Method</h2>
                 <div className="space-y-3">
@@ -464,12 +441,11 @@ const Checkout = () => {
               </div>
             </div>
 
-            {/* ── Right: Order Summary ────────────────────────────────────── */}
             <div>
               <div className="p-6 rounded-xl sticky top-6" style={cardStyle}>
                 <h2 className="text-xl font-bold mb-6" style={{ color: '#5A4638' }}>Order Summary</h2>
 
-                {/* Cart Items */}
+
                 <div className="space-y-3 mb-6 max-h-80 overflow-y-auto pr-2">
                   {cartItems.map((item) => {
                     const name  = getItemName(item);
@@ -482,7 +458,7 @@ const Checkout = () => {
                         style={{ borderColor: '#EAD8C0' }}
                       >
                         <div className="flex items-center">
-                          {/* Image container with emoji fallback */}
+
                           <div
                             className="w-12 h-12 rounded overflow-hidden mr-4 shrink-0 flex items-center justify-center text-xl"
                             style={{ backgroundColor: '#EAD8C0' }}
@@ -493,7 +469,6 @@ const Checkout = () => {
                                 alt={name}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
-                                  // Hide the broken image and show the emoji fallback
                                   e.target.style.display = 'none';
                                   e.target.parentNode.textContent = '🧴';
                                 }}
@@ -520,7 +495,7 @@ const Checkout = () => {
                   })}
                 </div>
 
-                {/* Price Breakdown */}
+
                 <div className="space-y-2 mb-6">
                   <div className="flex justify-between">
                     <span style={{ color: '#8B7355' }}>Subtotal</span>
@@ -538,7 +513,7 @@ const Checkout = () => {
                   </div>
                 </div>
 
-                {/* Place Order Button */}
+                
                 <button
                   onClick={handlePlaceOrder}
                   disabled={loading}

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { api } from '../API/Axios';
-import Navbar from '../Component/Navbar';
-import { useCart } from '../Context/CartContext';
-import { useWishlist } from '../Context/WishlistContext';
-import { useAuth } from '../Context/AuthContext';
+import { api } from '../api/axios';
+import Navbar from '../component/navbar';
+import { useCart } from '../context/cartContext';
+import { useWishlist } from '../context/wishlistContext';
+import { useAuth } from '../context/authContext';
 
 const HeartIconOutline = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,7 +173,7 @@ const Collections = () => {
   ) => {
     e.stopPropagation();
 
-    // OUT OF STOCK CHECK
+
     if (product.stock === 0) {
       showToast(
         'This product is out of stock',
@@ -472,7 +472,7 @@ const Collections = () => {
                       }}
                     />
 
-                    {/* WISHLIST BUTTON */}
+
                     <button
                       onClick={(e) =>
                         handleWishlistClick(
@@ -510,7 +510,7 @@ const Collections = () => {
                       )}
                     </button>
 
-                    {/* COLLECTION BADGE */}
+
                     {product.collection && (
                       <div className="absolute top-2 left-2">
                         <span
@@ -526,10 +526,10 @@ const Collections = () => {
                       </div>
                     )}
 
-                    {/* BOTTOM CONTAINER */}
+
                     <div className="absolute bottom-2 left-2 right-2 flex items-center">
 
-                      {/* OUT OF STOCK */}
+
                       {product.stock === 0 && (
                         <div className="z-10">
                           <span
@@ -545,7 +545,7 @@ const Collections = () => {
                         </div>
                       )}
 
-                      {/* ADD TO CART */}
+
                       <button
                         onClick={(e) =>
                           handleAddToCart(

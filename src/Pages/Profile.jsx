@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useAuth } from '../Context/AuthContext';
-import Navbar from '../Component/Navbar';
+import { useAuth } from '../context/authContext';
+import Navbar from '../component/navbar';
 import { useNavigate } from 'react-router-dom';
 
 const UserIcon = ({ className }) => (

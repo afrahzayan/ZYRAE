@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../Context/AuthContext';
-import { useCart } from '../Context/CartContext';
-import { useWishlist } from '../Context/WishlistContext';
+import { useAuth } from '../context/authContext';
+import { useCart } from '../context/cartContext';
+import { useWishlist } from '../context/wishlistContext';
 
 // Icons
 const ProfileIcon = ({ className }) => (

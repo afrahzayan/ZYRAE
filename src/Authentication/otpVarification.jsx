@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../Context/AuthContext';
-import { api } from '../API/Axios';
+import { api } from '../api/axios';
 
 const OTPVerification = () => {
 

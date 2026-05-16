@@ -1,6 +1,6 @@
 import { useFormik } from 'formik';
-import { LoginValidation } from './LoginValidation';
-import { useAuth } from '../Context/AuthContext';
+import { loginValidation } from './loginValidation';
+import { useAuth } from '../context/authContext';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 
@@ -9,7 +9,7 @@ const initialValues = {
   password: ''
 };
 
-function Login() {
+function login() {
   const { login, user, loading, error, clearError, isInitializing } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,7 +29,7 @@ function Login() {
 
   const { values, handleBlur, handleChange, handleSubmit, errors, touched } = useFormik({
     initialValues: initialValues,
-    validationSchema: LoginValidation,
+    validationSchema: loginValidation,
     onSubmit: async (values, { resetForm }) => {
       console.log('Login form submitted:', values);
       const user = await login(values.email, values.password);
@@ -212,4 +212,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default login;

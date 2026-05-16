@@ -1,8 +1,8 @@
 import React from 'react'
-import Navbar from '../Component/Navbar'
-import Baner from '../Component/Baner'
-import Footer from '../Component/Footer'
-import Card from '../Component/Card'
+import Navbar from '../component/navbar'
+import Baner from '../component/baner'
+import Footer from '../component/footer'
+import Card from '../component/card'
 
 function Home() {
   return (

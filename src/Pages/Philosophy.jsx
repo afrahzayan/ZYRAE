@@ -1,7 +1,7 @@
 
-import Footer from '../Component/Footer';
+import Footer from '../component/footer';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../Component/Navbar';
+import Navbar from '../component/navbar';
 
 const Philosophy = () => {
 

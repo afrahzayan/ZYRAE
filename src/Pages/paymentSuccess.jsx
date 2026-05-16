@@ -1,7 +1,7 @@
 import { useEffect, useState,useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCart } from "../Context/CartContext";
-import { useAuth } from "../Context/AuthContext";
+import { useCart } from "../context/cartContext";
+import { useAuth } from "../context/authContext";
 
 const PaymentSuccess = () => {
   const navigate    = useNavigate();

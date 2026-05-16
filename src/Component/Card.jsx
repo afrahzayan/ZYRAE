@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { api } from '../API/Axios'
+import { api } from '../api/axios'
 import { useNavigate } from 'react-router-dom'
-import { useWishlist } from '../Context/WishlistContext'
-import { useCart } from '../Context/CartContext'
-import { useAuth } from '../Context/AuthContext'
+import { useWishlist } from '../context/wishlistContext'
+import { useCart } from '../context/cartContext'
+import { useAuth } from '../context/authContext'
 
 const HeartIconOutline = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">

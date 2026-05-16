@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../Context/AuthContext';
-import { api } from '../API/Axios';
-import Navbar from '../Component/Navbar';
+import { useAuth } from '../context/authContext';
+import { api } from '../api/axios';
+import Navbar from '../component/navbar';
 import { Link } from 'react-router-dom';
 
 const OrdersPage = () => {
@@ -44,10 +44,7 @@ const OrdersPage = () => {
 
   }, [fetchOrders]);
 
-  // ------------------------------------------------------------------
-  // Helpers
-  // ------------------------------------------------------------------
-
+  
  const getItemImage = (item) => {
 
   
@@ -79,9 +76,7 @@ const getItemPrice = (item) => {
   return parseFloat(item.price || 0);
 };
 
-  // ------------------------------------------------------------------
-  // Not Logged In
-  // ------------------------------------------------------------------
+  
 
   if (!user) {
     return (
@@ -126,9 +121,7 @@ const getItemPrice = (item) => {
     );
   }
 
-  // ------------------------------------------------------------------
-  // Main Page
-  // ------------------------------------------------------------------
+ 
 
   return (
     <>
@@ -140,7 +133,6 @@ const getItemPrice = (item) => {
       >
         <div className="max-w-6xl mx-auto px-4 py-8">
 
-          {/* Heading */}
           <h1
             className="text-3xl font-bold mb-8"
             style={{ color: '#5A4638' }}
@@ -148,7 +140,6 @@ const getItemPrice = (item) => {
             My Orders
           </h1>
 
-          {/* Loading */}
           {loading ? (
 
             <div className="text-center py-12">
@@ -169,9 +160,7 @@ const getItemPrice = (item) => {
 
           ) : orders.length === 0 ? (
 
-            // ----------------------------------------------------------
-            // Empty Orders
-            // ----------------------------------------------------------
+          
 
             <div className="text-center py-12">
 
@@ -223,10 +212,7 @@ const getItemPrice = (item) => {
 
           ) : (
 
-            // ----------------------------------------------------------
-            // Orders List
-            // ----------------------------------------------------------
-
+           
             <div className="space-y-6">
 
               {orders.map((order) => (
@@ -240,7 +226,7 @@ const getItemPrice = (item) => {
                   }}
                 >
 
-                  {/* Order Header */}
+             
                   <div className="flex justify-between items-start mb-6">
 
                     <div>
@@ -302,7 +288,7 @@ const getItemPrice = (item) => {
 
                   </div>
 
-                  {/* Order Items */}
+                 
                   <div className="mb-6">
 
                     <h4
@@ -321,7 +307,7 @@ const getItemPrice = (item) => {
                           className="flex items-center"
                         >
 
-                          {/* Product Image */}
+                          
                           <div className="w-12 h-12 rounded overflow-hidden mr-3">
 
                             <img
@@ -337,7 +323,7 @@ const getItemPrice = (item) => {
 
                           </div>
 
-                          {/* Product Details */}
+
                           <div className="flex-1">
 
                             <p
@@ -366,7 +352,7 @@ const getItemPrice = (item) => {
 
                           </div>
 
-                          {/* Total */}
+                          
                           <p style={{ color: '#A79277' }}>
 
                             ₹
@@ -384,7 +370,7 @@ const getItemPrice = (item) => {
 
                   </div>
 
-                  {/* Shipping Info */}
+
                   <div
                     className="pt-4 border-t"
                     style={{ borderColor: '#D1BB9E' }}

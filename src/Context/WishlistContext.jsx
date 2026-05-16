@@ -1,6 +1,6 @@
 import { createContext, useState, useContext, useEffect } from 'react';
-import { api } from '../API/Axios';
-import { useAuth } from './AuthContext';
+import { api } from '../api/axios';
+import { useAuth } from './authContext';
 
 const WishlistContext = createContext();
 

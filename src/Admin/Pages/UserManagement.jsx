@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../../API/Axios';
+import { api } from '../../api/axios';
 import Dashboard from '../Component/Dashboard';
 
 const UsersManagement = () => {

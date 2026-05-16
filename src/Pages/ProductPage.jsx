@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { api } from '../API/Axios';
-import Navbar from '../Component/Navbar';
+import { api } from '../api/axios';
+import Navbar from '../component/navbar';
 import { useNavigate } from 'react-router-dom';
-import { useCart } from '../Context/CartContext';
-import { useWishlist } from '../Context/WishlistContext';
-import { useAuth } from '../Context/AuthContext';
+import { useCart } from '../context/cartContext';
+import { useWishlist } from '../context/wishlistContext';
+import { useAuth } from '../context/authContext';
 
 const HeartIconOutline = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
