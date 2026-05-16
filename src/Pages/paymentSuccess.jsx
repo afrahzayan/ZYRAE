@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState,useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../Context/CartContext";
 import { useAuth } from "../Context/AuthContext";
@@ -8,32 +8,49 @@ const PaymentSuccess = () => {
   const { clearCart } = useCart();
   const { user }    = useAuth();
   const [message, setMessage] = useState("Processing payment...");
+  const hasProcessed = useRef(false);
 
+  
   useEffect(() => {
-    // Auth state rehydrates asynchronously after a Stripe redirect.
-    // Wait until user is available before doing anything.
-    if (!user) return;
 
-    const handlePaymentSuccess = async () => {
-      try {
-        setMessage("Clearing cart...");
-        const success = await clearCart();
-        setMessage(
-          success
-            ? "Payment successful! Redirecting to your orders..."
-            : "Payment successful! Redirecting..."
-        );
-      } catch (error) {
-        console.error("PaymentSuccess: clearCart failed:", error);
-        setMessage("Payment confirmed. Redirecting...");
-      } finally {
-        setTimeout(() => navigate("/orders", { replace: true }), 2500);
-      }
-    };
+  if (!user || hasProcessed.current) return;
 
-    handlePaymentSuccess();
-  // clearCart and navigate are stable refs — safe to include, won't re-run
-  }, [user, clearCart, navigate]);
+  hasProcessed.current = true;
+
+  const handlePaymentSuccess = async () => {
+
+    try {
+
+      setMessage("Clearing cart...");
+
+      const success = await clearCart();
+
+      setMessage(
+        success
+          ? "Payment successful! Redirecting to your orders..."
+          : "Payment successful! Redirecting..."
+      );
+
+    } catch (error) {
+
+      console.error("PaymentSuccess: clearCart failed:", error);
+
+      setMessage("Payment confirmed. Redirecting...");
+
+    } finally {
+
+      setTimeout(() => {
+
+        navigate("/orders", { replace: true });
+
+      }, 2500);
+
+    }
+  };
+
+  handlePaymentSuccess();
+
+}, [user]);
 
   return (
     <div

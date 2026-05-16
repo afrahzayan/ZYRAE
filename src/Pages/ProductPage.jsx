@@ -103,6 +103,8 @@ const ProductPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const [toast, setToast] = useState({
     show: false,
@@ -135,13 +137,18 @@ const ProductPage = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [page]);
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
 
-      const response = await api.get('/product');
+      const response = await api.get('/product', {
+        params: {
+          page,
+          limit: 8
+        }
+      });
 
       if (response.data && response.data.products) {
         const formattedProducts = response.data.products.map((product) => ({
@@ -151,11 +158,13 @@ const ProductPage = () => {
         }));
 
         setProducts(formattedProducts);
+        setTotalPages(response.data.totalPages);
       } else {
         setProducts([]);
       }
 
       setError(null);
+
     } catch (err) {
       console.error('Error fetching products:', err);
       setError('Failed to load products. Please try again.');
@@ -488,8 +497,8 @@ const ProductPage = () => {
                         addingToCart[product._id] || product.stock === 0
                       }
                       className={`ml-auto px-3 py-1 rounded-full text-sm font-medium transition-opacity duration-300 hover:opacity-90 disabled:opacity-50 flex items-center ${product.stock === 0
-                          ? 'opacity-0 group-hover/card:opacity-0'
-                          : 'opacity-0 group-hover/card:opacity-100'
+                        ? 'opacity-0 group-hover/card:opacity-0'
+                        : 'opacity-0 group-hover/card:opacity-100'
                         }`}
                       style={{
                         backgroundColor: '#A79277',
@@ -536,6 +545,68 @@ const ProductPage = () => {
             ))}
           </div>
         )}
+
+        <div className="flex justify-center items-center gap-6 mt-10">
+
+          {/* LEFT ARROW */}
+          <button
+            disabled={page === 1}
+            onClick={() => setPage(prev => prev - 1)}
+            className="w-10 h-10 rounded-full flex items-center justify-center disabled:opacity-40 hover:scale-105 transition"
+            style={{
+              backgroundColor: '#A79277',
+              color: '#FFF2E1'
+            }}
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+
+          {/* PAGE NUMBER */}
+          <span
+            className="font-semibold text-lg"
+            style={{ color: '#5A4638' }}
+          >
+            {page} / {totalPages}
+          </span>
+
+          {/* RIGHT ARROW */}
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage(prev => prev + 1)}
+            className="w-10 h-10 rounded-full flex items-center justify-center disabled:opacity-40 hover:scale-105 transition"
+            style={{
+              backgroundColor: '#A79277',
+              color: '#FFF2E1'
+            }}
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+
+        </div>
 
         <div
           className="mt-12 p-6 rounded-xl shadow-sm"

@@ -540,37 +540,64 @@ const ProductsManagement = () => {
                   )}
                 </tbody>
               </table>
-              <div className="flex justify-center items-center gap-3 mt-6">
+              <div className="flex justify-center items-center gap-6 mt-6">
 
+                {/* LEFT ARROW */}
                 <button
                   disabled={page === 1}
                   onClick={() => setPage(prev => prev - 1)}
-                  className="px-4 py-2 rounded disabled:opacity-50"
+                  className="w-10 h-10 rounded-full flex items-center justify-center disabled:opacity-40 hover:scale-105 transition"
                   style={{
                     backgroundColor: '#A79277',
                     color: '#FFF2E1'
                   }}
                 >
-                  Previous
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
                 </button>
 
+                {/* PAGE NUMBER */}
                 <span
-                  className="font-medium"
+                  className="font-semibold"
                   style={{ color: '#5A4638' }}
                 >
-                  Page {page} of {totalPages}
+                  {page} / {totalPages}
                 </span>
 
+                {/* RIGHT ARROW */}
                 <button
                   disabled={page === totalPages}
                   onClick={() => setPage(prev => prev + 1)}
-                  className="px-4 py-2 rounded disabled:opacity-50"
+                  className="w-10 h-10 rounded-full flex items-center justify-center disabled:opacity-40 hover:scale-105 transition"
                   style={{
                     backgroundColor: '#A79277',
                     color: '#FFF2E1'
                   }}
                 >
-                  Next
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
                 </button>
 
               </div>
